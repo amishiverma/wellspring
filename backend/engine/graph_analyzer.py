@@ -100,24 +100,74 @@ def find_network_bottlenecks(
     sink_nodes: list[str]
 ) -> dict[str, Any]:
     """
-    Find network-wide bottlenecks using Max-Flow/Min-Cut analysis.
-    
-    Creates a super-source and super-sink to compute maximum flow from all
-    residential sources to all landfill/recycling sinks simultaneously.
-    
-    Args:
-        G: Directed graph from build_graph()
-        source_nodes: List of node IDs representing waste sources (residential areas)
-        sink_nodes: List of node IDs representing waste sinks (landfills, recycling centers)
-    
-    Returns:
-        Dictionary containing:
-            - max_flow_value (float): Theoretical maximum throughput (tons/hr)
-            - min_cut_edges (list[dict]): Edges in the minimum cut (bottleneck edges)
-            - min_cut_capacity (float): Capacity of the minimum cut
-            - flow_dict (dict): Full flow distribution across all edges
-            - saturated_edges (list[dict]): Edges operating at 100% capacity
-            - utilization_by_edge (dict): Edge utilization ratios
+    Find network-wide bottlenecks using the Max-Flow / Min-Cut theorem.
+
+    Algorithm Overview
+    ------------------
+    This function implements the classic Max-Flow / Min-Cut analysis on the
+    directed waste-flow graph using NetworkX's Edmonds-Karp algorithm
+    (a BFS-based implementation of Ford-Fulkerson with polynomial time
+    guarantee O(V · E^2)).
+
+    Mathematical Foundation
+    -----------------------
+    Max-Flow Min-Cut Theorem (Ford & Fulkerson, 1956):
+        In any flow network, the maximum value of flow from source s to sink t
+        equals the minimum capacity over all s-t cuts:
+
+            max_flow(s, t) = min_cut_capacity(s, t)
+
+        A cut (S, T) partitions nodes into two sets where s ∈ S and t ∈ T.
+        The cut capacity = Σ capacity(u → v) for all edges u ∈ S, v ∈ T.
+        Edges in the minimum-capacity cut are the binding bottlenecks.
+
+    Super-Source / Super-Sink Construction
+    ----------------------------------------
+    Because the waste network has multiple residential sources and multiple
+    terminal sinks, we add virtual nodes:
+
+        super_source  →  (∞ capacity)  →  each residential / source node
+        each landfill / recycling node →  (node capacity)  →  super_sink
+
+    This reduces the multi-source, multi-sink problem to a standard single-pair
+    max-flow problem solvable by Edmonds-Karp.
+
+    Edge Capacity Formula
+    ---------------------
+        capacity (tons/hr) = num_trucks × truck_capacity_tons × trips_per_hour
+
+    Error Resilience
+    ----------------
+    Both nx.maximum_flow() and nx.minimum_cut() are wrapped in
+    try/except nx.NetworkXError blocks. If the graph is disconnected
+    (e.g. a node has no edges, or the super-source can't reach the super-sink),
+    the functions return safe fallback values (max_flow=0, empty lists)
+    instead of crashing the API.
+
+    Parameters
+    ----------
+    G : nx.DiGraph
+        Directed graph from build_graph(). Edge attribute 'capacity' (tons/hr)
+        must be present on every edge — NetworkX requires this exact key.
+    source_nodes : list[str]
+        Node IDs for waste sources (residential zones, collection points).
+    sink_nodes : list[str]
+        Node IDs for waste terminals (landfills, recycling centres).
+
+    Returns
+    -------
+    dict with:
+        max_flow_value   (float)       — city-wide theoretical max throughput (tons/hr)
+        min_cut_edges    (list[dict])  — edges whose removal would reduce max flow
+                                         (the true system bottlenecks)
+        min_cut_capacity (float)       — capacity of the minimum cut (= max_flow)
+        flow_dict        (dict)        — full edge-level flow distribution
+        saturated_edges  (list[dict])  — edges at >= 99% utilisation
+        utilization_by_edge (dict)     — per-edge {flow, capacity, utilization}
+
+    Safe Fallback (returned on nx.NetworkXError)
+    ---------------------------------------------
+        max_flow_value = 0.0, all lists/dicts empty, no exception raised.
     """
     if not G.nodes():
         return {
@@ -344,10 +394,156 @@ def find_critical_path(G: nx.DiGraph, source: str, target: str) -> dict[str, Any
     }
 
 
+def analyze_network_capacity(
+    nodes: list[dict],
+    edges: list[dict],
+    source_node_id: str,
+    sink_node_id: str,
+) -> dict:
+    """
+    Analyse the capacity and bottlenecks of the waste-flow network.
+
+    This is the primary public entry-point for Phase 2.
+    Internally calls build_graph(), find_network_bottlenecks(), and
+    nx.betweenness_centrality() and returns a single, flat result dict
+    that Vrinda's Pydantic models can serialise directly.
+
+    Edge capacity (tons/hr) = num_trucks * truck_capacity_tons * trips_per_hour.
+    NetworkX requires the edge attribute to be named 'capacity' exactly — this
+    is handled inside build_graph().
+
+    Parameters
+    ----------
+    nodes : list[dict]
+        Each dict must have:
+            id                      (str)   — unique node identifier
+            type                    (str)   — 'residential'|'transfer'|'mrf'|
+                                              'landfill'|'recycling'
+            arrival_rate_tons_hr    (float) — waste generation / arrival rate
+            service_rate_per_server (float) — tons/hr per processing bay
+            num_servers             (int)   — number of parallel bays
+
+    edges : list[dict]
+        Each dict must have:
+            source              (str)   — origin node id
+            target              (str)   — destination node id
+            num_trucks          (int)   — trucks on this route
+            truck_capacity_tons (float) — tons per truck
+            trips_per_hour      (float) — round trips per hour
+        Optional:
+            distance_km         (float) — route length
+
+    source_node_id : str
+        The single source node to use for min-cut / critical-path analysis.
+        (For multi-source analysis use find_network_bottlenecks() directly.)
+
+    sink_node_id : str
+        The single sink node (landfill / recycling centre).
+
+    Returns
+    -------
+    dict with:
+        max_flow            (float)       — maximum throughput tons/hr
+        bottleneck_edges    (list[dict])  — min-cut edges (the hard bottlenecks)
+                                           each has: source, target, capacity,
+                                           flow, is_transport_edge
+        node_centrality     (dict)        — betweenness centrality per node id
+                                           (higher = more critical to flow paths)
+        saturated_edges     (list[dict])  — edges at >= 99 % utilisation
+        utilization_by_edge (dict)        — per-edge flow/capacity breakdown
+        min_cut_capacity    (float)       — confirms max_flow (max-flow min-cut)
+    """
+    # 1. Build the directed graph
+    G = build_graph(nodes, edges)
+
+    # 2. Determine sources and sinks
+    #    We respect the explicit single source/sink the caller passed, but also
+    #    support all nodes of matching type so the super-source / super-sink
+    #    logic inside find_network_bottlenecks works correctly.
+    all_source_ids = [
+        n["id"] for n in nodes
+        if n.get("type") in ("residential", "source") or n["id"] == source_node_id
+    ]
+    all_sink_ids = [
+        n["id"] for n in nodes
+        if n.get("type") in ("landfill", "recycling") or n["id"] == sink_node_id
+    ]
+
+    # Fall back to the explicit ids if auto-detection yields nothing
+    if not all_source_ids:
+        all_source_ids = [source_node_id]
+    if not all_sink_ids:
+        all_sink_ids = [sink_node_id]
+
+    # 3. Max-flow / min-cut
+    flow_result = find_network_bottlenecks(G, all_source_ids, all_sink_ids)
+
+    # 4. Betweenness centrality (weight = inverse capacity → higher cap = shorter path)
+    #    nx.betweenness_centrality uses 'weight' as the path cost; we want
+    #    high-capacity edges to be preferred, so we set weight=None (unweighted)
+    #    for simplicity and speed — a waste network is rarely large enough to need
+    #    weighted centrality.
+    centrality: dict[str, float] = nx.betweenness_centrality(G, normalized=True)
+    centrality_rounded = {node_id: round(score, 6) for node_id, score in centrality.items()}
+
+    return {
+        "max_flow": flow_result["max_flow_value"],
+        "bottleneck_edges": flow_result["min_cut_edges"],
+        "node_centrality": centrality_rounded,
+        "saturated_edges": flow_result["saturated_edges"],
+        "utilization_by_edge": flow_result["utilization_by_edge"],
+        "min_cut_capacity": flow_result["min_cut_capacity"],
+    }
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("GRAPH ANALYZER - Max-Flow/Min-Cut Demo")
     print("=" * 60)
+
+    # ── Minimal 3-node / 2-edge demo (as specified) ──────────────────────────
+    #
+    #   source ──(cap=30)──► transfer ──(cap=20)──► landfill
+    #
+    #   Edge 1: 3 trucks * 10 tons * 1 trip/hr = 30 tons/hr
+    #   Edge 2: 2 trucks * 10 tons * 1 trip/hr = 20 tons/hr  ← bottleneck
+    #   Expected max_flow = 20 tons/hr
+    print("\n--- MINIMAL 3-node, 2-edge demo (analyze_network_capacity) ---")
+
+    demo_nodes = [
+        {"id": "source_zone",  "type": "residential", "arrival_rate_tons_hr": 30, "service_rate_per_server": 0,  "num_servers": 0},
+        {"id": "transfer_hub", "type": "transfer",     "arrival_rate_tons_hr": 0,  "service_rate_per_server": 15, "num_servers": 2},
+        {"id": "landfill_X",   "type": "landfill",     "arrival_rate_tons_hr": 0,  "service_rate_per_server": 25, "num_servers": 1},
+    ]
+    demo_edges = [
+        # source_zone → transfer_hub: 3 trucks * 10 tons * 1 trip/hr = 30 tons/hr
+        {"source": "source_zone",  "target": "transfer_hub", "distance_km": 5,  "num_trucks": 3, "truck_capacity_tons": 10, "trips_per_hour": 1},
+        # transfer_hub → landfill_X: 2 trucks * 10 tons * 1 trip/hr = 20 tons/hr  ← bottleneck
+        {"source": "transfer_hub", "target": "landfill_X",   "distance_km": 10, "num_trucks": 2, "truck_capacity_tons": 10, "trips_per_hour": 1},
+    ]
+
+    result = analyze_network_capacity(
+        demo_nodes, demo_edges,
+        source_node_id="source_zone",
+        sink_node_id="landfill_X",
+    )
+
+    print(f"  max_flow          : {result['max_flow']} tons/hr  (expected 20.0)")
+    print(f"  min_cut_capacity  : {result['min_cut_capacity']} tons/hr")
+    print(f"  node_centrality   : {result['node_centrality']}")
+    print(f"  bottleneck_edges  :")
+    for e in result["bottleneck_edges"]:
+        tag = "[TRANSPORT]" if e["is_transport_edge"] else "[SUPER]"
+        print(f"    {tag} {e['source']} -> {e['target']}  cap={e['capacity']}  flow={e['flow']}")
+    print(f"  saturated_edges   :")
+    for e in result["saturated_edges"]:
+        print(f"    {e['source']} -> {e['target']}  {e['flow']}/{e['capacity']} ({e['utilization']:.0%})")
+    print(f"  utilization_by_edge:")
+    for k, v in result["utilization_by_edge"].items():
+        print(f"    {k}: flow={v['flow']}, cap={v['capacity']}, util={v['utilization']:.0%}")
+
+    assert result["max_flow"] == 20.0, f"Expected 20.0, got {result['max_flow']}"
+    print("\n  [ASSERT PASSED] max_flow == 20.0")
     
     # Demo network: Residential -> Transfer -> MRF -> Landfill/Recycling
     nodes = [

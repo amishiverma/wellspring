@@ -22,101 +22,188 @@ from typing import Any
 
 def erlang_c_formula(arrival_rate: float, service_rate: float, num_servers: int) -> float:
     """
-    Calculate Erlang C formula: probability that an arriving job must queue.
-    
-    P(queue) = [ (c*ρ)^c / (c! * (1-ρ)) ] / [ Σ_{k=0}^{c-1} (c*ρ)^k/k! + (c*ρ)^c / (c! * (1-ρ)) ]
-    
-    Where ρ = λ / (c * μ) is the per-server utilization.
-    
-    Args:
-        arrival_rate: λ (jobs/hour) - total arrival rate to the facility
-        service_rate: μ (jobs/hour) - service rate per server
-        num_servers: c - number of parallel servers (bays, docks, processors)
-    
-    Returns:
-        Probability of queuing (0.0 to 1.0). Returns 1.0 if utilization >= 1.0.
-    
-    Raises:
-        ValueError: If inputs are invalid (negative rates, zero servers).
+    Compute the Erlang C probability — the core of the M/M/c queuing model.
+
+    The Erlang C formula gives P_W: the probability that an arriving job
+    (waste truck) must wait because all c servers (processing bays) are busy.
+    It is the foundation of steady-state queue-length and waiting-time analysis.
+
+    Mathematical Definition
+    -----------------------
+    Let:
+        λ  = arrival_rate      (tons/hr  — Poisson arrival process)
+        μ  = service_rate      (tons/hr per server — Exponential service times)
+        c  = num_servers       (number of parallel processing bays)
+        A  = λ / μ             (offered load in Erlangs)
+        ρ  = λ / (c * μ)      (per-server traffic intensity; must be < 1)
+
+    Erlang C formula:
+
+                    A^c / (c! * (1 - ρ))
+        P_W = ─────────────────────────────────────────
+               Σ_{k=0}^{c-1} A^k/k!  +  A^c/(c! * (1-ρ))
+
+    This is computed iteratively (no direct factorial calls) to remain
+    numerically stable for arbitrarily large c without OverflowError.
+
+    Downstream metrics derived from P_W:
+        Lq = P_W * ρ / (1 − ρ)      (mean queue length, Little's Law)
+        Wq = Lq / λ                  (mean wait time before service begins)
+        L  = Lq + λ/μ                (mean total number in system)
+        W  = L  / λ                  (mean total time in system)
+
+    Parameters
+    ----------
+    arrival_rate : float
+        λ — total waste arrival rate at this facility (tons/hr).
+        Must be >= 0. Value 0 → idle system, P_W = 0.
+    service_rate : float
+        μ — processing capacity per server / bay (tons/hr).
+        Must be > 0. If 0 or negative, returns 1.0 (saturated fallback).
+    num_servers : int
+        c — number of parallel processing bays / docks.
+        Must be >= 1. If 0 or negative, returns 1.0 (saturated fallback).
+
+    Returns
+    -------
+    float
+        P_W in [0.0, 1.0]:
+          0.0 → no arriving truck ever waits  (zero load)
+          1.0 → every arriving truck must wait (ρ >= 1, system saturated)
+
+    Edge Cases (no exceptions raised)
+    ----------------------------------
+    - num_servers <= 0  → returns 1.0  (misconfigured node, treated as saturated)
+    - service_rate <= 0 → returns 1.0  (offline node, treated as saturated)
+    - arrival_rate == 0 → returns 0.0  (idle facility)
+    - ρ >= 1.0          → returns 1.0  (unstable queue, infinite wait)
     """
-    if num_servers <= 0:
-        raise ValueError("num_servers must be positive")
-    if arrival_rate < 0 or service_rate <= 0:
-        raise ValueError("arrival_rate must be >= 0, service_rate must be > 0")
-    
-    # Per-server utilization
+    # ── Bullet-proof guards: never raise, always return a safe value ──────────
+    if num_servers <= 0 or service_rate <= 0:
+        # Misconfigured or offline node → treat as fully saturated
+        return 1.0
+    if arrival_rate <= 0:
+        return 0.0
+
+    # Per-server traffic intensity  ρ = λ / (c · μ)
     rho = arrival_rate / (num_servers * service_rate)
-    
-    # If system is unstable (ρ >= 1), queue probability is 1 (certainty)
+
+    # Unstable system: ρ ≥ 1 → queue grows without bound
     if rho >= 1.0:
         return 1.0
-    
-    # If no load, no queue
-    if arrival_rate == 0:
-        return 0.0
-    
+
     c = num_servers
-    c_rho = c * rho  # = λ / μ (offered load in erlangs)
-    
-    # Compute sum_{k=0}^{c-1} (c*ρ)^k / k!
+    A = c * rho          # Offered load in Erlangs (= λ / μ)
+
+    # Iterative sum  Σ_{k=0}^{c-1} A^k / k!
+    # Each iteration: term_k = A^k / k!  built from term_{k-1} * A / k
+    # Avoids math.factorial() — safe for c up to tens of thousands.
     sum_terms = 0.0
-    term = 1.0  # k=0 term
+    term = 1.0           # k = 0:  A^0 / 0! = 1
     for k in range(c):
         sum_terms += term
-        term *= c_rho / (k + 1)  # Next term: (c*ρ)^{k+1} / (k+1)!
-    
-    # Compute the Erlang C numerator: (c*ρ)^c / (c! * (1-ρ))
-    # term now holds (c*ρ)^c / c!
+        term *= A / (k + 1)   # term becomes A^{k+1} / (k+1)!
+
+    # After the loop, term = A^c / c!  (the k = c term, not added to sum)
+    # Numerator of Erlang C:  A^c / (c! · (1 − ρ))
     numerator = term / (1.0 - rho)
-    
-    # Erlang C = numerator / (sum_terms + numerator)
-    erlang_c = numerator / (sum_terms + numerator)
-    
-    # Clamp to [0, 1] for numerical stability
-    return max(0.0, min(1.0, erlang_c))
+
+    # Guard against degenerate denominator
+    denominator = sum_terms + numerator
+    if denominator == 0.0:
+        return 0.0
+
+    # Clamp to [0, 1] for floating-point safety
+    return max(0.0, min(1.0, numerator / denominator))
 
 
 def compute_node_metrics(node: dict[str, Any]) -> dict[str, Any]:
     """
-    Compute queuing metrics for a single waste facility node using M/M/c theory.
-    
-    Args:
-        node: Dictionary with keys:
-            - id (str): Unique node identifier
-            - type (str): Facility type ('transfer', 'mrf', 'landfill', etc.)
-            - arrival_rate_tons_hr (float): λ - Waste arrival rate in tons/hour
-            - service_rate_per_server (float): μ - Processing rate per server in tons/hour
-            - num_servers (int): c - Number of parallel processing units
-    
-    Returns:
-        Dictionary containing:
-            - node_id (str): The node identifier
-            - utilization (float): ρ = λ / (c * μ) - per-server utilization
-            - erlang_c (float): Probability of queuing
-            - queue_length (float): Lq - average number of trucks waiting
-            - wait_time_hours (float): Wq - average wait time in hours
-            - is_bottleneck (bool): True if utilization > 0.85
-            - throughput_tons_hr (float): Effective throughput (min(λ, c*μ))
-            - capacity_tons_hr (float): Maximum capacity (c * μ)
+    Compute steady-state M/M/c queuing metrics for a single waste facility node.
+
+    Model: M/M/c (Markovian arrivals, Markovian service, c parallel servers)
+    -----------------------------------------------------------------------
+    Assumes:
+      - Poisson arrivals at rate λ (arrival_rate_tons_hr)
+      - Exponential service times at rate μ per server (service_rate_per_server)
+      - c identical parallel servers / processing bays (num_servers)
+      - Infinite waiting room (no balking or reneging)
+      - FCFS (First-Come, First-Served) discipline
+
+    Key formulas applied
+    --------------------
+      ρ  = λ / (c · μ)                      per-server utilisation
+      P_W = erlang_c_formula(λ, μ, c)       probability of waiting (Erlang C)
+      Lq  = P_W · ρ / (1 − ρ)              mean trucks queuing   (Little's Law)
+      Wq  = Lq / λ                          mean wait before service (hrs)
+      L   = Lq + λ/μ                        mean trucks in system
+      W   = L  / λ                          mean time in system (hrs)
+
+    Zero-Division / Saturation Protection
+    --------------------------------------
+    - num_servers == 0  → instant return: utilization=1.0, wait=inf, bottleneck=True
+    - service_rate == 0 → instant return: utilization=1.0, wait=inf, bottleneck=True
+    - ρ >= 1.0          → queue is unbounded: queue_length=None (inf), wait=None (inf)
+    No ZeroDivisionError or ValueError is ever raised.
+
+    Parameters
+    ----------
+    node : dict
+        Must contain:
+            id                      (str)   — unique node identifier
+            type                    (str)   — facility type string
+            arrival_rate_tons_hr    (float) — λ: waste arrival rate (tons/hr)
+            service_rate_per_server (float) — μ: processing rate per bay (tons/hr)
+            num_servers             (int)   — c: number of parallel bays
+
+    Returns
+    -------
+    dict with keys:
+        node_id            (str)          — node identifier
+        node_type          (str)          — facility type
+        utilization        (float)        — ρ = λ/(c·μ);  > 1.0 means saturated
+        erlang_c           (float)        — P_W: probability truck must wait
+        queue_length       (float | None) — Lq (None when ρ >= 1 → unbounded)
+        wait_time_hours    (float | None) — Wq (None when ρ >= 1 → unbounded)
+        is_bottleneck      (bool)         — True when utilization > 0.85
+        throughput_tons_hr (float)        — min(λ, c·μ): actual processed flow
+        capacity_tons_hr   (float)        — c · μ: maximum processing capacity
+        arrival_rate_tons_hr (float)      — λ as supplied
+        service_rate_per_server (float)   — μ as supplied
+        num_servers        (int)          — c as supplied
     """
-    # Extract and validate inputs with defaults
-    node_id = node.get("id", "unknown")
-    arrival_rate = float(node.get("arrival_rate_tons_hr", 0.0))
-    service_rate = float(node.get("service_rate_per_server", 1.0))
-    num_servers = int(node.get("num_servers", 1))
-    node_type = node.get("type", "unknown")
-    
-    # Guard against invalid configs
-    if num_servers <= 0:
-        num_servers = 1
-    if service_rate <= 0:
-        service_rate = 1.0
+    # ── Extract inputs with .get() — never crash on missing keys ─────────────
+    node_id      = node.get("id",                       "unknown")
+    node_type    = node.get("type",                     "unknown")
+    arrival_rate = float(node.get("arrival_rate_tons_hr",    0.0))
+    service_rate = float(node.get("service_rate_per_server", 0.0))
+    num_servers  = int(node.get("num_servers",               0))
+
+    # ── Bullet-proof guard: zero/negative servers or service rate ─────────────
+    # Instead of raising ValueError, return a saturated node record immediately.
+    if num_servers <= 0 or service_rate <= 0:
+        return {
+            "node_id":                node_id,
+            "node_type":              node_type,
+            "utilization":            1.0,
+            "erlang_c":               1.0,
+            "queue_length":           None,          # represents infinity
+            "wait_time_hours":        None,          # represents infinity
+            "is_bottleneck":          True,
+            "throughput_tons_hr":     0.0,
+            "capacity_tons_hr":       0.0,
+            "arrival_rate_tons_hr":   arrival_rate,
+            "service_rate_per_server": service_rate,
+            "num_servers":            num_servers,
+        }
+
     if arrival_rate < 0:
         arrival_rate = 0.0
     
-    # Per-server utilization ρ = λ / (c * μ)
-    capacity = num_servers * service_rate
-    utilization = arrival_rate / capacity if capacity > 0 else 0.0
+    # Per-server utilization  ρ = λ / (c · μ)
+    # At this point num_servers > 0 and service_rate > 0 are guaranteed.
+    capacity    = num_servers * service_rate
+    utilization = arrival_rate / capacity
     
     # Erlang C - probability of queuing
     erlang_c = erlang_c_formula(arrival_rate, service_rate, num_servers)

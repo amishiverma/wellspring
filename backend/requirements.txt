@@ -1,0 +1,37 @@
+# ============================================================
+# backend/requirements.txt  —  MindOverMatter Waste Flow Twin
+# Pinned to exact stable versions for reproducible builds.
+# Install: pip install -r requirements.txt
+# ============================================================
+
+# --- Web Framework ---
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# --- Data Validation ---
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# --- ORM / Database ---
+sqlmodel==0.0.21
+aiosqlite==0.20.0
+
+# --- Graph & Simulation ---
+networkx==3.3
+scipy==1.14.1
+simpy==4.1.1
+
+# --- HTTP Client (for LLM calls) ---
+httpx==0.27.2
+
+# --- LLM SDKs ---
+openai==1.51.0
+google-generativeai==0.8.3
+
+# --- Testing ---
+pytest==8.3.3
+pytest-asyncio==0.24.0
+httpx==0.27.2
+
+# --- Dev utilities ---
+python-dotenv==1.0.1

@@ -53,6 +53,38 @@
 }
 
 /* Glassmorphism & Visual Tokens */
+.glass-biophilic {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(255, 255, 255, 0.8) inset;
+}
+
+.glass-biophilic-card {
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 18px 45px rgba(20, 30, 45, 0.05);
+  border-radius: 28px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-biophilic-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 25px 55px rgba(20, 30, 45, 0.08);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+}
+
 .glass-panel {
   background: rgba(12, 16, 26, 0.72);
   backdrop-filter: blur(20px);
@@ -67,13 +99,44 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.glass-card-interactive {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* Material Design 3 Elevation & Surface Tokens */
+.m3-card {
+  background-color: #1a1e28;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 12px 1px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
 }
-.glass-card-interactive:hover {
-  border-color: rgba(16, 185, 129, 0.35);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px -10px rgba(16, 185, 129, 0.15);
+
+.m3-card-interactive {
+  background-color: #1a1e28;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 12px 1px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3-card-interactive:hover {
+  background-color: #212634;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px 2px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.m3-surface-low {
+  background-color: #161922;
+}
+
+.m3-surface-container {
+  background-color: #1a1e28;
+}
+
+.m3-surface-high {
+  background-color: #212634;
+}
+
+.m3-surface-highest {
+  background-color: #282e3f;
 }
 
 /* Grid Background */
@@ -105,20 +168,28 @@
   background: rgba(16, 185, 129, 0.5);
 }
 
-/* React Flow Custom Overrides */
-.react-flow__attribution {
-  display: none !important;
-}
-.react-flow__edge-path {
-  stroke-dasharray: 5;
-  animation: flowEdge 1s linear infinite;
+/* Leaflet Geospatial Map Overrides */
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background-color: #0b0f19 !important;
+  width: 100%;
+  height: 100%;
 }
 
-@keyframes flowEdge {
+.flow-arc-pulse {
+  animation: flowArcDash 1.4s linear infinite;
+}
+
+@keyframes flowArcDash {
   from {
-    stroke-dashoffset: 20;
+    stroke-dashoffset: 40;
   }
   to {
     stroke-dashoffset: 0;
   }
+}
+
+.custom-geo-node {
+  background: transparent !important;
+  border: none !important;
 }

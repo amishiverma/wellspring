@@ -57,7 +57,6 @@ export const LandingPageView: React.FC = () => {
         Fixed to the viewport across the entire page journey.
         As the user scrolls down, the video continuously scrubs through the 
         clouds, down to the skyline, into the streets, and down to the building!
-        No black background cuts off the animation!
         ========================================================================
       */}
       <ReposeCanvas progress={flightProgress} className="fixed inset-0 w-full h-full pointer-events-none z-0" />
@@ -65,8 +64,8 @@ export const LandingPageView: React.FC = () => {
       {/* Floating Top Minimal Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-12 py-6 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2">
-          <span className="font-repose text-xl sm:text-2xl tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-            Mind Over Matter
+          <span className="font-repose text-2xl sm:text-3xl tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+            WellSpring
           </span>
         </div>
 
@@ -91,16 +90,14 @@ export const LandingPageView: React.FC = () => {
         <div className="w-full" />
 
         {/* Left Side: Editorial Serif Title & Divider */}
-        <div className="relative max-w-2xl text-left my-auto">
+        <div className="relative max-w-3xl text-left my-auto">
           <motion.div
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <h1 className="font-repose text-7xl sm:text-8xl md:text-9xl text-white font-normal leading-[0.92] tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
-              Mind Over
-              <br />
-              Matter
+              WellSpring
             </h1>
 
             {/* Delicate Horizontal Rule */}
@@ -108,12 +105,12 @@ export const LandingPageView: React.FC = () => {
 
             {/* Subline with Spaced Tracking */}
             <p className="font-sans text-[11px] sm:text-xs tracking-[0.28em] text-white/95 uppercase font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-              THE AUTONOMOUS GRAV-FLUX DIGITAL TWIN
+              AUTONOMOUS WASTE FLOW BOTTLENECK ANALYZER &amp; DIGITAL TWIN
             </p>
           </motion.div>
         </div>
 
-        {/* Bottom Bar: Center "SCROLL" + Bottom-Right "DEVELOPED FOR WELLSPRING" */}
+        {/* Bottom Bar: Center "SCROLL" + Bottom-Right Project Identification */}
         <div className="relative w-full flex items-end justify-between">
           <div className="hidden sm:block sm:w-48 text-[11px] font-mono text-white/70 tracking-wider drop-shadow-md">
             TSEC MINITHON '26
@@ -131,19 +128,19 @@ export const LandingPageView: React.FC = () => {
             <ChevronDown className="w-4 h-4 text-white/90 group-hover:text-white transition -mt-1 animate-bounce" />
           </div>
 
-          {/* Bottom Right: DEVELOPED FOR WELLSPRING */}
+          {/* Bottom Right: WELLSPRING DIGITAL TWIN */}
           <div className="text-right font-sans drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
             <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-white/70 uppercase block mb-0.5">
-              DEVELOPED FOR
+              AUTONOMOUS TWIN
             </span>
             <span className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-white block">
               WELLSPRING
             </span>
             <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-white/80 uppercase block mt-0.5">
-              MIND OVER MATTER
+              BOTTLENECK ANALYZER
             </span>
             <span className="text-[8px] sm:text-[9px] tracking-[0.3em] text-emerald-300 uppercase block mt-1 font-mono">
-              ENGINEERED • CIRCULARITY
+              ERLANG-C • CO2e • WHAT-IF
             </span>
           </div>
         </div>
@@ -171,16 +168,16 @@ export const LandingPageView: React.FC = () => {
           </div>
 
           <h2 className="font-repose text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.08] text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
-            Built for ambition. <br />
+            Built for municipal scale. <br />
             <span className="font-repose italic font-light text-emerald-300">
-              Designed for equilibrium.
+              Engineered for zero congestion.
             </span>
           </h2>
 
           <p className="font-sans text-base sm:text-xl text-slate-200 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
-            Waste is not a terminal residue. It is mass trapped in an unoptimized gravitational field.
-            By replacing blind municipal collection with real-time Erlang-C queueing physics,
-            Mind Over Matter eliminates gridlock before it begins.
+            Municipal waste flow is not static residue—it is high-volume mass flowing through dynamic networks. 
+            By combining M/M/c Erlang-C queueing mathematics, discrete-event simulation, and geospatial satellite intelligence, 
+            WellSpring pinpoints gate bottlenecks, eliminates hauler gridlock, and drives circular valorization before delays cascade across the city.
           </p>
 
           {/* 4 Stat Badges */}
@@ -240,10 +237,10 @@ export const LandingPageView: React.FC = () => {
           className="text-center max-w-2xl mx-auto space-y-3 p-6 rounded-2xl bg-black/35 backdrop-blur-md border border-white/10 shadow-lg"
         >
           <span className="text-xs font-mono tracking-widest text-cyan-400 uppercase font-bold">
-            THE FOUR SYSTEM PHASES
+            FOUR CORE CAPABILITIES
           </span>
           <h3 className="font-repose text-4xl sm:text-5xl text-white font-normal drop-shadow-md">
-            Autonomous Pipeline Architecture
+            Digital Twin Architecture
           </h3>
           <p className="text-xs sm:text-sm text-slate-300 font-sans font-light">
             Continuous telemetry, discrete-event queueing math, and closed-loop circular synthesis.
@@ -271,7 +268,7 @@ export const LandingPageView: React.FC = () => {
               </h4>
               <p className="font-sans text-xs sm:text-sm text-slate-200 font-light leading-relaxed">
                 48 spatial IoT telemetry nodes broadcasting real-time optical NIR spectroscopy,
-                hydraulic compactor strain metrics, and LoRaWAN packet streams across municipal zones.
+                hydraulic compactor strain metrics, and LoRaWAN packet streams across municipal facilities.
               </p>
             </div>
 
@@ -303,11 +300,11 @@ export const LandingPageView: React.FC = () => {
                 <Layers className="w-5 h-5 text-violet-400" />
               </div>
               <h4 className="font-repose text-2xl sm:text-3xl text-white font-normal mb-3 group-hover:text-violet-300 transition">
-                Grav-Flux State &amp; Erlang-C Dynamics
+                Queueing Science &amp; Erlang-C Dynamics
               </h4>
               <p className="font-sans text-xs sm:text-sm text-slate-200 font-light leading-relaxed">
                 Facilities modeled as gravitational potential wells. M/M/c Erlang-C mathematical
-                formulation computes traffic intensity ρ = λ / (c · μ) and 24-hr predictive jam heatmaps.
+                formulation computes traffic intensity ρ = λ / (c · μ), queue lengths, and 24-hr predictive jam heatmaps.
               </p>
             </div>
 
@@ -417,7 +414,7 @@ export const LandingPageView: React.FC = () => {
             The Engineering Collective
           </h3>
           <p className="text-xs font-mono text-slate-400">
-            4-person multidisciplinary digital twin task force
+            4-person multidisciplinary engineering team behind WellSpring
           </p>
         </motion.div>
 
@@ -437,7 +434,7 @@ export const LandingPageView: React.FC = () => {
               Frontend Wizard
             </span>
             <p className="text-[11px] text-slate-300 font-sans mt-2 font-light">
-              React Flow graph, pulseRed bottleneck animations, Zustand state, and luxury UI.
+              Geospatial Satellite Twin, pulseRed bottleneck indicators, Zustand state, and luxury UI.
             </p>
           </motion.div>
 
@@ -521,7 +518,7 @@ export const LandingPageView: React.FC = () => {
             Enter Mission Control
           </h3>
           <p className="text-slate-200 font-sans text-sm font-light max-w-md mx-auto leading-relaxed">
-            Step into the live React Flow topology, trigger dynamic Erlang-C bay adjustments, and run
+            Step into the live Geospatial Satellite digital twin, trigger dynamic Erlang-C bay adjustments, and run
             parallel quantum what-if scenarios in real-time.
           </p>
 
@@ -530,7 +527,7 @@ export const LandingPageView: React.FC = () => {
               onClick={handleEnterConsole}
               className="px-8 py-4 rounded-full bg-white hover:bg-emerald-400 text-black font-sans font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.35)] hover:shadow-[0_0_50px_rgba(16,185,129,0.6)] active:scale-95 inline-flex items-center gap-3"
             >
-              <span>Launch Digital Twin Console</span>
+              <span>Launch WellSpring Console</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

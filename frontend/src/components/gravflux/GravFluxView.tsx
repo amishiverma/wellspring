@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -6,10 +6,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
   CartesianGrid,
-  BarChart,
-  Bar,
 } from 'recharts';
 import {
   Layers,
@@ -20,13 +17,17 @@ import {
   Cpu,
   ShieldCheck,
   Plus,
+  Play,
+  RotateCcw,
 } from 'lucide-react';
 import { useGraphStore } from '../../stores/graphStore';
 import { PREDICTIVE_JAM_DATA } from '../../data/mockData';
 import { calculateErlangC } from '../../utils/queueingMath';
+import { GravFluxCanvas } from '../common/GravFluxCanvas';
 
 export const GravFluxView: React.FC = () => {
   const { nodes, addBaysToNode, mitigateBottleneck, setSelectedNodeId } = useGraphStore();
+  const [spatialIntensity, setSpatialIntensity] = useState<number>(1.2);
 
   // Erlang C facility calculation rows
   const facilityDiagnostics = nodes.map((node) => {
@@ -37,134 +38,180 @@ export const GravFluxView: React.FC = () => {
     };
   });
 
-  // Chart data for facility queue distribution
-  const queueBarData = nodes.map((n) => ({
-    name: n.name.split(' ')[0] + ' ' + (n.name.split(' ')[1] || ''),
-    queueLength: n.queueLength,
-    waitMinutes: n.avgWaitMinutes,
-    utilization: Math.round(n.utilization * 100),
-    isCritical: n.bottleneckStatus === 'critical',
-  }));
-
   return (
-    <div className="space-y-8 pb-16">
-      {/* View Header */}
-      <div className="p-6 rounded-3xl glass-panel border border-white/[0.08]">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20 text-xs font-mono mb-2">
+    <div className="space-y-6 pb-12 font-sans select-none">
+      {/* 
+        ========================================================================
+        1. VIEW HEADER (Biophilic Floating Glass Card)
+        ========================================================================
+      */}
+      <div className="p-6 sm:p-8 rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 text-xs font-mono font-medium mb-3 shadow-xs">
           <Layers className="w-3.5 h-3.5" />
-          <span>STEP 02 • GRAV-FLUX STATE ANALYSIS &amp; QUEUEING DYNAMICS</span>
+          <span>STEP 02 • SPATIAL GRAV-FLUX TWIN &amp; QUEUEING DYNAMICS</span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-white tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-stone-900 tracking-tight">
           Gravitational Potential Wells &amp; Erlang-C Math Engine
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl font-light leading-relaxed">
+        <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-3xl font-normal leading-relaxed">
           Modeling municipal waste streams as gravitational flow vectors sinking into high-capacity
           processing wells. Utilizing M/M/c Erlang-C mathematical formulations to identify traffic
-          intensity (ρ) bottlenecks before physical conveyor or gate gridlock manifests.
+          intensity (ρ) bottlenecks before physical gate gridlock manifests.
         </p>
       </div>
 
-      {/* Erlang-C Mathematical Formula Card */}
-      <div className="p-6 rounded-3xl glass-panel border border-cyan-500/20 bg-gradient-to-r from-obsidian-900 via-obsidian-950 to-obsidian-900 shadow-xl">
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-4">
+      {/* 
+        ========================================================================
+        2. SPATIAL PHYSICS MAP PREVIEW (Interactive GravFlux Canvas in Glass Card)
+        ========================================================================
+      */}
+      <div className="rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-200/50 gap-2">
+          <div>
+            <h3 className="text-sm font-semibold text-stone-900">
+              Spatial Gravitational Vector Field
+            </h3>
+            <p className="text-xs text-stone-500 font-mono">
+              Live particle flux converging into facility potential wells
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono text-stone-500">Field Flux:</span>
+            <input
+              type="range"
+              min="0.5"
+              max="2.5"
+              step="0.1"
+              value={spatialIntensity}
+              onChange={(e) => setSpatialIntensity(parseFloat(e.target.value))}
+              className="accent-slate-900 w-28 cursor-pointer"
+            />
+            <span className="text-xs font-mono text-stone-900 font-bold">{spatialIntensity}x</span>
+          </div>
+        </div>
+
+        <div className="w-full h-72 rounded-[28px] overflow-hidden bg-slate-950 relative border border-white/40 shadow-inner">
+          <GravFluxCanvas intensity={spatialIntensity} className="w-full h-full" />
+          <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-white/80 text-[10px] font-mono font-medium text-stone-800 shadow-sm">
+            Newtonian Vector Simulator: 8 Sinks Active
+          </div>
+        </div>
+      </div>
+
+      {/* 
+        ========================================================================
+        3. ERLANG-C FORMULATION CARDS (Clean Light Panels)
+        ========================================================================
+      */}
+      <div className="rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 p-6 sm:p-8 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-200/50 mb-4">
           <div className="flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-cyan-400" />
-            <h3 className="font-display font-bold text-white text-base">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100/90 text-emerald-800 flex items-center justify-center shadow-xs">
+              <Cpu className="w-4 h-4" />
+            </div>
+            <h3 className="font-semibold text-stone-900 text-base">
               Core Queueing Theory Formulation (M/M/c Erlang-C)
             </h3>
           </div>
-          <span className="text-[11px] font-mono text-cyan-300">
-            Tanishq Core Algorithm Specification
+          <span className="text-xs font-mono font-medium text-emerald-800 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/60 shadow-xs">
+            Tanishq Core Math Engine
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-            <span className="text-slate-400 text-[10px] uppercase block mb-1">
+          <div className="p-5 rounded-2xl bg-white/60 border border-white/80 space-y-1.5 shadow-xs">
+            <span className="text-stone-400 text-[10px] uppercase font-bold tracking-wider block">
               Traffic Intensity (ρ)
             </span>
-            <div className="text-lg font-bold text-emerald-400 py-1 font-mono">
+            <div className="text-xl font-bold text-stone-900 font-mono">
               ρ = λ / (c · μ)
             </div>
-            <p className="text-[11px] text-slate-300 font-sans mt-1">
-              Where λ is truck arrival rate, c is active parallel service bays, and μ is bay service rate.
-              If ρ ≥ 0.85, bottleneck warning triggers.
+            <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+              Where λ is arrival rate, c is parallel service bays, and μ is service rate. If ρ ≥ 0.85,
+              congestive bottleneck triggers.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-            <span className="text-slate-400 text-[10px] uppercase block mb-1">
+          <div className="p-5 rounded-2xl bg-white/60 border border-white/80 space-y-1.5 shadow-xs">
+            <span className="text-stone-400 text-[10px] uppercase font-bold tracking-wider block">
               Erlang-C Delay Probability
             </span>
-            <div className="text-base font-bold text-cyan-300 py-1 font-mono">
+            <div className="text-xl font-bold text-sky-800 font-mono">
               P(W &gt; 0) = C(c, a)
             </div>
-            <p className="text-[11px] text-slate-300 font-sans mt-1">
-              Probability that an arriving disposal truck must queue in the facility approach lane.
+            <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+              Probability that an arriving hauler must queue outside facility intake doors.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-            <span className="text-slate-400 text-[10px] uppercase block mb-1">
+          <div className="p-5 rounded-2xl bg-white/60 border border-white/80 space-y-1.5 shadow-xs">
+            <span className="text-stone-400 text-[10px] uppercase font-bold tracking-wider block">
               Mean Queue Length &amp; Delay
             </span>
-            <div className="text-base font-bold text-violet-300 py-1 font-mono">
+            <div className="text-xl font-bold text-emerald-800 font-mono">
               Lq = P(W&gt;0) · [ρ / (1 - ρ)]
             </div>
-            <p className="text-[11px] text-slate-300 font-sans mt-1">
-              Average number of idle trucks staged in queue. Mean delay Wq = Lq / λ.
+            <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+              Average number of idling trucks staged in bay queue. Mean delay Wq = Lq / λ.
             </p>
           </div>
         </div>
       </div>
 
-      {/* 24-Hour Predictive Jam Heatmap (AreaChart) */}
-      <div className="p-6 rounded-3xl glass-panel border border-white/[0.08]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/[0.06] gap-2 mb-4">
+      {/* 
+        ========================================================================
+        4. 24-HOUR PREDICTIVE JAM ACCUMULATION CURVE (Biophilic Glass Chart)
+        ========================================================================
+      */}
+      <div className="rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 p-6 sm:p-8 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-stone-200/50 gap-2 mb-4">
           <div>
-            <h3 className="font-display font-bold text-white text-lg">
+            <h3 className="font-semibold text-stone-900 text-base">
               24-Hour Predictive Jam Accumulation Curve
             </h3>
-            <p className="text-xs text-slate-400 font-mono">
-              Simulated queue formation across major nodes vs emergency diversion threshold
+            <p className="text-xs text-stone-500 font-mono">
+              Simulated queue formation across major municipal nodes vs emergency diversion threshold
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs font-mono">
-            <span className="flex items-center gap-1.5 text-rose-400">
+            <span className="flex items-center gap-1.5 text-rose-700 font-medium">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Apex MRF Queue
             </span>
-            <span className="flex items-center gap-1.5 text-cyan-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" /> Central Hub Queue
+            <span className="flex items-center gap-1.5 text-emerald-700 font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Central Hub Queue
             </span>
-            <span className="flex items-center gap-1.5 text-slate-400">
+            <span className="flex items-center gap-1.5 text-stone-600 font-medium">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Inflow Surge (λ)
             </span>
           </div>
         </div>
 
-        <div className="w-full h-80">
+        <div className="w-full h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={PREDICTIVE_JAM_DATA} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <AreaChart data={PREDICTIVE_JAM_DATA} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="apexGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
+                <linearGradient id="apexGradBio" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
                 </linearGradient>
-                <linearGradient id="centralGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00f0ff" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#00f0ff" stopOpacity={0.0} />
+                <linearGradient id="centralGradBio" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="hour" stroke="#64748b" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-              <YAxis stroke="#64748b" tick={{ fontSize: 11, fill: '#94a3b8' }} unit=" t" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+              <XAxis dataKey="hour" stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c' }} />
+              <YAxis stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c' }} unit=" t" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#07090e',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid rgba(255, 255, 255, 0.8)',
+                  borderRadius: '16px',
                   fontFamily: 'monospace',
                   fontSize: '12px',
+                  color: '#1c1917',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
                 }}
               />
               <Area
@@ -172,36 +219,40 @@ export const GravFluxView: React.FC = () => {
                 dataKey="apexMrfQueue"
                 name="Apex MRF Queue"
                 stroke="#f43f5e"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 fillOpacity={1}
-                fill="url(#apexGrad)"
+                fill="url(#apexGradBio)"
               />
               <Area
                 type="monotone"
                 dataKey="centralHubQueue"
                 name="Central Transfer Queue"
-                stroke="#00f0ff"
-                strokeWidth={2}
+                stroke="#10b981"
+                strokeWidth={2.5}
                 fillOpacity={1}
-                fill="url(#centralGrad)"
+                fill="url(#centralGradBio)"
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Facility Bottleneck Diagnostic Table */}
-      <div className="p-6 rounded-3xl glass-panel border border-white/[0.08]">
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-4">
+      {/* 
+        ========================================================================
+        5. FACILITY ERLANG-C TELEMETRY TABLE (Frosted Glass Table)
+        ========================================================================
+      */}
+      <div className="rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 p-6 sm:p-8 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+        <div className="flex items-center justify-between pb-4 border-b border-stone-200/50 mb-4">
           <div>
-            <h3 className="font-display font-bold text-white text-lg">
+            <h3 className="font-semibold text-stone-900 text-base">
               Facility-by-Facility Erlang-C Telemetry Table
             </h3>
-            <p className="text-xs text-slate-400 font-mono">
-              Live mathematical state for all 8 facilities. Click facility to open deep controls.
+            <p className="text-xs text-stone-500 font-mono">
+              Live mathematical state for all 8 facilities. Click facility to adjust arrival / bay parameters.
             </p>
           </div>
-          <span className="text-xs font-mono text-emerald-400">
+          <span className="text-xs font-mono font-medium px-3 py-1 rounded-full bg-white/80 text-stone-700 border border-white/80 shadow-xs">
             {nodes.length} Facilities Monitored
           </span>
         </div>
@@ -209,8 +260,8 @@ export const GravFluxView: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left font-mono text-xs">
             <thead>
-              <tr className="border-b border-white/[0.06] text-slate-400 text-[10px] uppercase">
-                <th className="py-3 px-4">Facility Name</th>
+              <tr className="border-b border-stone-200/60 text-stone-500 text-[10px] uppercase bg-stone-100/50">
+                <th className="py-3 px-4 rounded-l-xl">Facility Name</th>
                 <th className="py-3 px-3">Arrival λ (t/h)</th>
                 <th className="py-3 px-3">Service μ (t/h)</th>
                 <th className="py-3 px-3">Bays (c)</th>
@@ -218,10 +269,10 @@ export const GravFluxView: React.FC = () => {
                 <th className="py-3 px-3">Queue (Lq)</th>
                 <th className="py-3 px-3">Wait (Wq)</th>
                 <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3 px-4 text-right rounded-r-xl">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-stone-200/40">
               {facilityDiagnostics.map((fac) => {
                 const isCritical = fac.qCalc.severity === 'critical';
                 const isWarning = fac.qCalc.severity === 'warning';
@@ -229,86 +280,67 @@ export const GravFluxView: React.FC = () => {
                 return (
                   <tr
                     key={fac.id}
-                    className="hover:bg-white/[0.02] transition cursor-pointer"
+                    className="hover:bg-white/80 transition cursor-pointer"
                     onClick={() => setSelectedNodeId(fac.id)}
                   >
-                    <td className="py-3.5 px-4 font-sans font-medium text-white">
+                    <td className="py-3.5 px-4 font-sans font-medium text-stone-900">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`w-2 h-2 rounded-full ${
+                          className={`w-2.5 h-2.5 rounded-full ${
                             isCritical
                               ? 'bg-rose-500 animate-ping'
                               : isWarning
                               ? 'bg-amber-400'
-                              : 'bg-emerald-400'
+                              : 'bg-emerald-500'
                           }`}
                         />
                         <span>{fac.name}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-3 text-slate-300">{fac.arrivalRate}</td>
-                    <td className="py-3.5 px-3 text-slate-300">{fac.serviceRate}</td>
-                    <td className="py-3.5 px-3 text-white font-bold">{fac.activeBays}</td>
+                    <td className="py-3.5 px-3 text-stone-600">{fac.arrivalRate}</td>
+                    <td className="py-3.5 px-3 text-stone-600">{fac.serviceRate}</td>
+                    <td className="py-3.5 px-3 font-bold text-stone-900">{fac.activeBays}</td>
                     <td className="py-3.5 px-3">
                       <span
                         className={`font-bold ${
                           isCritical
-                            ? 'text-rose-400'
+                            ? 'text-rose-600'
                             : isWarning
-                            ? 'text-amber-400'
-                            : 'text-emerald-400'
+                            ? 'text-amber-600'
+                            : 'text-emerald-700'
                         }`}
                       >
                         {Math.round(fac.qCalc.utilization * 100)}%
                       </span>
                     </td>
-                    <td className="py-3.5 px-3 font-bold text-slate-200">
-                      {Math.round(fac.qCalc.queueLength * 10) / 10} trucks
+                    <td className="py-3.5 px-3 text-stone-700">
+                      {fac.qCalc.queueLength} trucks
                     </td>
+                    <td className="py-3.5 px-3 text-sky-800 font-semibold">{fac.qCalc.avgWaitMinutes}m</td>
                     <td className="py-3.5 px-3">
                       <span
-                        className={`font-bold ${
-                          fac.qCalc.avgWaitMinutes > 15 ? 'text-rose-400' : 'text-cyan-400'
-                        }`}
-                      >
-                        {Math.round(fac.qCalc.avgWaitMinutes * 10) / 10}m
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
                           isCritical
-                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            ? 'bg-rose-100 text-rose-800 border-rose-200'
                             : isWarning
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            ? 'bg-amber-100 text-amber-800 border-amber-200'
+                            : 'bg-emerald-100 text-emerald-800 border-emerald-200'
                         }`}
                       >
-                        {fac.qCalc.severity}
+                        {fac.qCalc.severity.toUpperCase()}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      {isCritical ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            mitigateBottleneck(fac.id);
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500 text-obsidian-950 font-bold text-[11px] hover:bg-emerald-400 transition"
-                        >
-                          Mitigate
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addBaysToNode(fac.id, 1);
-                          }}
-                          className="px-2 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 text-[10px] transition flex items-center gap-1 ml-auto"
-                        >
-                          <Plus className="w-3 h-3" /> Bay
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addBaysToNode(fac.id, 1);
+                        }}
+                        className="px-3 py-1 rounded-full bg-white/80 hover:bg-white text-stone-800 text-[10px] font-mono font-medium transition border border-stone-200 shadow-xs hover:shadow-sm"
+                        title="Add +1 Processing Bay"
+                      >
+                        +1 Bay
+                      </button>
                     </td>
                   </tr>
                 );

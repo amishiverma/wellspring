@@ -187,7 +187,7 @@ export const useSimStore = create<SimState>((set, get) => ({
         bayAdjustment: 2,
         divertRatePct: 20,
         greenFleetPct: 55,
-        activeScenarioName: 'Yash AI Planner Heuristic Synthesis',
+        activeScenarioName: 'Autonomous Neural Dispatch Matrix',
         aiPlannerBullets: [
           'Bottleneck alleviated: Added +2 dynamically scheduled bays to Apex MRF, shifting utilization from rho 0.914 to 0.652.',
           'Carbon Dividend: Averted 44.2 MT CO2e daily by eliminating 420 collective truck idle minutes at transfer gates.',

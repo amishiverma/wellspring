@@ -114,8 +114,8 @@ export const LandingPageView: React.FC = () => {
 
         {/* Bottom Bar: Center "SCROLL" + Bottom-Right Status Card */}
         <div className="relative w-full flex items-end justify-between">
-          <div className="hidden sm:block sm:w-48 text-[11px] font-mono text-white/70 tracking-wider drop-shadow-md">
-            TSEC MINITHON '26
+          <div className="hidden sm:block sm:w-56 text-[11px] font-mono text-white/70 tracking-wider drop-shadow-md">
+            ENTERPRISE DEPLOYMENT • BUILD 2.4
           </div>
 
           {/* Center SCROLL indicator */}
@@ -311,7 +311,7 @@ export const LandingPageView: React.FC = () => {
             </div>
 
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-              <span className="text-xs font-mono text-slate-300">Tanishq Math Engine</span>
+              <span className="text-xs font-mono text-slate-300">Stochastic Queue Math Engine</span>
               <button
                 onClick={() => setActiveTab('gravflux')}
                 className="px-4 py-2 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/40 text-xs font-mono uppercase transition flex items-center gap-2 group-hover:shadow-[0_0_20px_rgba(139,92,246,0.3)]"
@@ -347,7 +347,7 @@ export const LandingPageView: React.FC = () => {
             </div>
 
             <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-              <span className="text-xs font-mono text-slate-300">Yash AI Optimizer</span>
+              <span className="text-xs font-mono text-slate-300">Autonomous Neural Optimizer</span>
               <button
                 onClick={() => setActiveTab('scenarios')}
                 className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-mono uppercase transition flex items-center gap-2 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
@@ -398,7 +398,7 @@ export const LandingPageView: React.FC = () => {
 
       {/* 
         ========================================================================
-        4. TEAM ENGINEERING COLLECTIVE (Appearing ON TOP OF THE LIVING VIDEO)
+        4. SYSTEM ARCHITECTURE MODULES
         ========================================================================
       */}
       <section className="relative z-10 py-24 px-6 sm:px-12 max-w-5xl mx-auto space-y-12">
@@ -410,13 +410,13 @@ export const LandingPageView: React.FC = () => {
           className="text-center space-y-2 p-6 rounded-2xl bg-black/35 backdrop-blur-md border border-white/10 shadow-lg"
         >
           <span className="text-xs font-mono tracking-widest text-slate-300 uppercase">
-            TSEC MINITHON 2026
+            ENTERPRISE DEPLOYMENT • BUILD 2.4
           </span>
           <h3 className="font-repose text-3xl sm:text-4xl text-white font-normal">
-            The Engineering Collective
+            System Architecture Modules
           </h3>
           <p className="text-xs font-mono text-slate-400">
-            4-person multidisciplinary engineering team behind WellSpring
+            Integrated multi-agent architecture powering the WellSpring Digital Twin
           </p>
         </motion.div>
 
@@ -429,14 +429,14 @@ export const LandingPageView: React.FC = () => {
             className="p-6 rounded-2xl bg-black/35 backdrop-blur-xl border border-white/15 hover:border-emerald-400/50 hover:bg-black/45 transition shadow-xl"
           >
             <span className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3 font-bold font-sans">
-              A
+              FE
             </span>
-            <span className="font-display font-bold text-white text-sm block">Amishi</span>
+            <span className="font-display font-bold text-white text-sm block">Frontend Engine</span>
             <span className="text-[10px] text-emerald-400 uppercase mt-0.5 block font-bold">
-              Frontend Wizard
+              Geospatial UI Twin
             </span>
             <p className="text-[11px] text-slate-300 font-sans mt-2 font-light">
-              Geospatial Satellite Twin, pulseRed bottleneck indicators, Zustand state, and luxury UI.
+              Geospatial Satellite Twin, dynamic pulseRed indicators, Zustand state, and biophilic UI.
             </p>
           </motion.div>
 
@@ -448,14 +448,14 @@ export const LandingPageView: React.FC = () => {
             className="p-6 rounded-2xl bg-black/35 backdrop-blur-xl border border-white/15 hover:border-cyan-400/50 hover:bg-black/45 transition shadow-xl"
           >
             <span className="w-9 h-9 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center mx-auto mb-3 font-bold font-sans">
-              V
+              API
             </span>
-            <span className="font-display font-bold text-white text-sm block">Vrinda</span>
+            <span className="font-display font-bold text-white text-sm block">API &amp; DB Gateway</span>
             <span className="text-[10px] text-cyan-400 uppercase mt-0.5 block font-bold">
-              API Architect
+              Data Pipeline
             </span>
             <p className="text-[11px] text-slate-300 font-sans mt-2 font-light">
-              FastAPI pipeline, Pydantic v2 data models, SQLite persistence, and CORS contracts.
+              FastAPI pipeline, Pydantic v2 data contracts, SQLite telemetry persistence, and CORS.
             </p>
           </motion.div>
 
@@ -467,14 +467,14 @@ export const LandingPageView: React.FC = () => {
             className="p-6 rounded-2xl bg-black/35 backdrop-blur-xl border border-white/15 hover:border-violet-400/50 hover:bg-black/45 transition shadow-xl"
           >
             <span className="w-9 h-9 rounded-full bg-violet-500/20 text-violet-400 border border-violet-500/30 flex items-center justify-center mx-auto mb-3 font-bold font-sans">
-              T
+              QM
             </span>
-            <span className="font-display font-bold text-white text-sm block">Tanishq</span>
+            <span className="font-display font-bold text-white text-sm block">Stochastic Math</span>
             <span className="text-[10px] text-violet-400 uppercase mt-0.5 block font-bold">
-              Core Math Scientist
+              Simulation Engine
             </span>
             <p className="text-[11px] text-slate-300 font-sans mt-2 font-light">
-              M/M/c Erlang-C queuing models, SimPy event simulator, and NetworkX Max-Flow.
+              M/M/c Erlang-C queuing models, SimPy event simulator, and NetworkX Max-Flow solver.
             </p>
           </motion.div>
 
@@ -486,14 +486,14 @@ export const LandingPageView: React.FC = () => {
             className="p-6 rounded-2xl bg-black/35 backdrop-blur-xl border border-white/15 hover:border-amber-400/50 hover:bg-black/45 transition shadow-xl"
           >
             <span className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto mb-3 font-bold font-sans">
-              Y
+              AI
             </span>
-            <span className="font-display font-bold text-white text-sm block">Yash</span>
+            <span className="font-display font-bold text-white text-sm block">Neural Optimizer</span>
             <span className="text-[10px] text-amber-400 uppercase mt-0.5 block font-bold">
-              AI &amp; Optimization
+              AI &amp; CO2 Heuristics
             </span>
             <p className="text-[11px] text-slate-300 font-sans mt-2 font-light">
-              CO2 emission calculator (2.68 kg/L fuel factor), heuristics, and LLM City Planner.
+              CO2e emission calculator (2.68 kg/L fuel factor), heuristics, and LLM City Planner.
             </p>
           </motion.div>
         </div>

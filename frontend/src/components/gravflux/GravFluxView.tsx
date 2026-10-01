@@ -62,42 +62,13 @@ export const GravFluxView: React.FC = () => {
 
       {/* 
         ========================================================================
-        2. SPATIAL PHYSICS MAP PREVIEW (Interactive GravFlux Canvas in Glass Card)
+        2. SPATIAL PHYSICS MAP PREVIEW (Interactive Architectural GravFlux Simulation)
         ========================================================================
       */}
-      <div className="rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-200/50 gap-2">
-          <div>
-            <h3 className="text-sm font-semibold text-stone-900">
-              Spatial Gravitational Vector Field
-            </h3>
-            <p className="text-xs text-stone-500 font-sans font-normal">
-              Live particle flux converging into facility potential wells
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-sans text-stone-500 font-normal">Field Flux:</span>
-            <input
-              type="range"
-              min="0.5"
-              max="2.5"
-              step="0.1"
-              value={spatialIntensity}
-              onChange={(e) => setSpatialIntensity(parseFloat(e.target.value))}
-              className="accent-slate-900 w-28 cursor-pointer"
-            />
-            <span className="text-xs font-sans text-stone-900 font-semibold tabular-nums">{spatialIntensity}x</span>
-          </div>
-        </div>
-
-        <div className="w-full h-72 rounded-[28px] overflow-hidden bg-slate-950 relative border border-white/40 shadow-inner">
-          <GravFluxCanvas intensity={spatialIntensity} className="w-full h-full" />
-          <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-white/80 text-[11px] font-sans font-medium text-stone-800 shadow-sm">
-            Newtonian Vector Simulator: 8 Sinks Active
-          </div>
-        </div>
-      </div>
+      <GravFluxCanvas
+        intensity={spatialIntensity}
+        onIntensityChange={setSpatialIntensity}
+      />
 
       {/* 
         ========================================================================

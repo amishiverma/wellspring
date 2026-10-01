@@ -298,7 +298,7 @@ export const ScenarioEngineView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-violet-400" />
                 <h4 className="font-display font-bold text-white text-sm">
-                  Yash AI City Planner Recommendations (3-Bullet Synthesis)
+                  AI City Planner Recommendations (3-Bullet Synthesis)
                 </h4>
               </div>
               <button

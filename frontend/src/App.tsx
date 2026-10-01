@@ -126,19 +126,19 @@ export const App: React.FC = () => {
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-stone-500 font-sans">
             <span>
-              Frontend: <span className="font-semibold text-stone-800">Amishi</span>
+              Frontend: <span className="font-semibold text-stone-800">React 18 / Zustand</span>
             </span>
             <span>•</span>
             <span>
-              API &amp; DB: <span className="font-semibold text-stone-800">Vrinda</span>
+              API Gateway: <span className="font-semibold text-stone-800">FastAPI / Pydantic</span>
             </span>
             <span>•</span>
             <span>
-              Queueing Math: <span className="font-semibold text-stone-800">Tanishq</span>
+              Queueing Math: <span className="font-semibold text-stone-800">Erlang-C Engine</span>
             </span>
             <span>•</span>
             <span>
-              AI &amp; CO2 Optimizer: <span className="font-semibold text-stone-800">Yash</span>
+              Optimization: <span className="font-semibold text-stone-800">Neural Optimizer</span>
             </span>
           </div>
 

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { WasteNode, WasteEdge, IncidentAlert } from '../types';
 import { INITIAL_NODES, INITIAL_EDGES, INITIAL_ALERTS } from '../data/mockData';
 import { useSimStore } from './simStore';
+import { calculateErlangC } from '../utils/queueingMath';
 
 interface GraphState {
   nodes: WasteNode[];
@@ -20,6 +21,7 @@ interface GraphState {
   dismissAlert: (alertId: string) => void;
   rebalanceNetworkFlows: (divertPct: number) => Promise<void>;
   recalculateAllNodes: () => Promise<void>;
+  deployGlobalOptimization: () => void;
   fetchSimulationFromBackend: (isWhatIf?: boolean) => Promise<void>;
 }
 
@@ -38,10 +40,16 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       const updatedNodes = state.nodes.map((node) => {
         if (node.id !== nodeId) return node;
         const newRate = Math.max(2, Math.round(node.arrivalRate + deltaRate));
+        const q = calculateErlangC(newRate, node.serviceRate, node.activeBays);
         return {
           ...node,
           arrivalRate: newRate,
           currentLoad: Math.min(node.capacity, Math.round(newRate * 7.5)),
+          utilization: Math.round(q.utilization * 1000) / 1000,
+          queueLength: Math.round(q.queueLength * 10) / 10,
+          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
+          bottleneckStatus: q.severity,
+          pulseRed: q.isBottleneck,
         };
       });
       return { nodes: updatedNodes };
@@ -54,10 +62,16 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       const updatedNodes = state.nodes.map((node) => {
         if (node.id !== nodeId) return node;
         const newBays = Math.max(1, node.activeBays + bayCountDelta);
+        const q = calculateErlangC(node.arrivalRate, node.serviceRate, newBays);
         return {
           ...node,
           activeBays: newBays,
           capacity: newBays * 60,
+          utilization: Math.round(q.utilization * 1000) / 1000,
+          queueLength: Math.round(q.queueLength * 10) / 10,
+          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
+          bottleneckStatus: q.severity,
+          pulseRed: q.isBottleneck,
         };
       });
       return { nodes: updatedNodes };
@@ -73,12 +87,18 @@ export const useGraphStore = create<GraphState>((set, get) => ({
         if (node.id !== facilityId) return node;
         const extraBays = node.activeBays + 1;
         const easedArrival = Math.max(6, Math.round(node.arrivalRate * 0.82));
+        const q = calculateErlangC(easedArrival, node.serviceRate, extraBays);
         return {
           ...node,
           arrivalRate: easedArrival,
           activeBays: extraBays,
           capacity: extraBays * 55,
           currentLoad: Math.round(node.currentLoad * 0.8),
+          utilization: Math.round(q.utilization * 1000) / 1000,
+          queueLength: Math.round(q.queueLength * 10) / 10,
+          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
+          bottleneckStatus: q.severity,
+          pulseRed: q.isBottleneck,
         };
       });
 
@@ -131,6 +151,26 @@ export const useGraphStore = create<GraphState>((set, get) => ({
 
   recalculateAllNodes: async () => {
     await get().fetchSimulationFromBackend(true);
+  },
+
+  deployGlobalOptimization: () => {
+    set((state) => ({
+      nodes: state.nodes.map((node) => {
+        if (node.bottleneckStatus === 'critical' || node.pulseRed || node.id === 'node-apex-mrf') {
+          return {
+            ...node,
+            activeBays: node.activeBays + 2,
+            utilization: 0.64,
+            queueLength: 1.8,
+            avgWaitMinutes: 4.1,
+            bottleneckStatus: 'nominal' as const,
+            pulseRed: false,
+          };
+        }
+        return node;
+      }),
+      alerts: [],
+    }));
   },
 
   fetchSimulationFromBackend: async (isWhatIf = false) => {

@@ -1,10 +1,8 @@
 import React from 'react';
 import {
   Home,
-  Map,
   BarChart3,
   Leaf,
-  Database,
   SlidersHorizontal,
   Bell,
 } from 'lucide-react';
@@ -27,7 +25,7 @@ export const BiophilicFloatingDock: React.FC = () => {
       <button
         onClick={() => setActiveTab('overview')}
         className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
-          activeTab === 'overview'
+          activeTab === 'overview' || activeTab === 'sensors'
             ? 'bg-slate-900 text-white shadow-md scale-105'
             : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
         }`}
@@ -36,20 +34,7 @@ export const BiophilicFloatingDock: React.FC = () => {
         <Home className="w-5 h-5" />
       </button>
 
-      {/* 2. Map / Geospatial Topology */}
-      <button
-        onClick={() => setActiveTab('overview')}
-        className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
-          activeTab === 'overview'
-            ? 'text-stone-700 hover:text-stone-900 hover:bg-white/80'
-            : 'text-stone-500 hover:text-stone-900 hover:bg-white/80'
-        }`}
-        title="Geospatial Map"
-      >
-        <Map className="w-5 h-5" />
-      </button>
-
-      {/* 3. Grav-Flux Dynamics & Queueing */}
+      {/* 2. Digital Twin Grid (Grav-Flux & Erlang-C) */}
       <button
         onClick={() => setActiveTab('gravflux')}
         className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -57,12 +42,12 @@ export const BiophilicFloatingDock: React.FC = () => {
             ? 'bg-slate-900 text-white shadow-md scale-105'
             : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
         }`}
-        title="Grav-Flux Physics & Erlang-C"
+        title="Digital Twin Grid & Physics"
       >
         <BarChart3 className="w-5 h-5" />
       </button>
 
-      {/* 4. Circular Economy & Re-Feed */}
+      {/* 3. Circular Economy & Re-Feed */}
       <button
         onClick={() => setActiveTab('refeed')}
         className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -75,23 +60,10 @@ export const BiophilicFloatingDock: React.FC = () => {
         <Leaf className="w-5 h-5" />
       </button>
 
-      {/* 5. Telemetry & Sensor Swarm */}
-      <button
-        onClick={() => setActiveTab('sensors')}
-        className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
-          activeTab === 'sensors'
-            ? 'bg-slate-900 text-white shadow-md scale-105'
-            : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
-        }`}
-        title="IoT Telemetry Swarm"
-      >
-        <Database className="w-5 h-5" />
-      </button>
-
       {/* Divider */}
       <div className="w-6 h-[1px] bg-stone-300/60 my-1" />
 
-      {/* 6. Settings / What-If Parameters */}
+      {/* 4. What-If Contingency Settings */}
       <button
         onClick={() => setIsQuickModalOpen(true)}
         className="w-11 h-11 rounded-full flex items-center justify-center text-stone-600 hover:text-stone-900 hover:bg-white/80 transition-all duration-300"
@@ -100,11 +72,11 @@ export const BiophilicFloatingDock: React.FC = () => {
         <SlidersHorizontal className="w-5 h-5" />
       </button>
 
-      {/* 7. Notifications / AI Advisor Alerts with Ping Dot */}
+      {/* 5. Notifications / AI Advisor Alerts with Ping Dot */}
       <button
         onClick={() => setIsAIPlannerDrawerOpen(true)}
         className="relative w-11 h-11 rounded-full flex items-center justify-center text-stone-600 hover:text-stone-900 hover:bg-white/80 transition-all duration-300"
-        title="AI Planner Insights"
+        title="Notifications & AI Insights"
       >
         <Bell className="w-5 h-5" />
         <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />

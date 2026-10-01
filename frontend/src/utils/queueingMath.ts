@@ -22,6 +22,16 @@ export interface ErlangCCalculation {
   severity: 'nominal' | 'warning' | 'critical';
 }
 
+export function getNodeStatus(utilization: number, queueLength: number = 0): 'critical' | 'warning' | 'nominal' {
+  const normUtil = utilization > 1 && utilization <= 100 ? utilization / 100 : utilization;
+  if (normUtil >= 0.85 || queueLength > 8) {
+    return 'critical';
+  } else if (normUtil >= 0.70) {
+    return 'warning';
+  }
+  return 'nominal';
+}
+
 export function calculateErlangC(
   arrivalRate: number, // lambda (trucks/hour)
   serviceRate: number, // mu (trucks/bay/hour)
@@ -65,12 +75,8 @@ export function calculateErlangC(
   const serviceTimeMinutes = (1 / serviceRate) * 60;
   const totalSystemTimeMinutes = avgWaitMinutes + serviceTimeMinutes;
 
-  let severity: 'nominal' | 'warning' | 'critical' = 'nominal';
-  if (rawRho >= 0.88 || avgWaitMinutes > 25) {
-    severity = 'critical';
-  } else if (rawRho >= 0.75 || avgWaitMinutes > 12) {
-    severity = 'warning';
-  }
+  const severity = getNodeStatus(rawRho, queueLength);
+  const isBottleneck = severity === 'critical';
 
   return {
     utilization: rawRho,
@@ -78,7 +84,7 @@ export function calculateErlangC(
     queueLength: Math.max(0, queueLength),
     avgWaitMinutes: Math.max(0, avgWaitMinutes),
     totalSystemTimeMinutes: Math.max(0, totalSystemTimeMinutes),
-    isBottleneck: rawRho >= 0.85,
+    isBottleneck,
     severity,
   };
 }

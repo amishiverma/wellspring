@@ -390,10 +390,123 @@ def run_simulation_simple(
     return results["time_series"]
 
 
+def run_time_series_simulation(
+    nodes: list[dict],
+    edges: list[dict],
+    sim_time_hours: int = 8,
+) -> list[dict]:
+    """
+    Run a discrete-event time-series simulation of the waste-flow network.
+
+    This is the primary public entry-point for Phase 2.
+    Internally delegates to run_simulation() which builds the full SimPy
+    environment with truck generators, facility resources, and the
+    snapshot-collector monitor process.
+
+    Simulation model
+    ----------------
+    - Each facility node (transfer / mrf / landfill / recycling) becomes a
+      simpy.Resource(env, capacity=num_servers).
+    - Trucks arrive as a Poisson process (exponential inter-arrivals) at a
+      rate derived from the incoming edges: rate = num_trucks * trips_per_hour.
+    - Service times are exponentially distributed with mean = truck_load / service_rate.
+    - A snapshot_collector process yields every 0.25 hours (15 min) and
+      records len(resource.queue) and resource.count for each facility.
+    - Simulation runs for sim_time_hours then returns all snapshots.
+
+    Parameters
+    ----------
+    nodes : list[dict]
+        Each dict must have:
+            id                      (str)   — unique node identifier
+            type                    (str)   — 'residential'|'transfer'|'mrf'|
+                                              'landfill'|'recycling'
+            arrival_rate_tons_hr    (float) — waste generation rate (source nodes)
+            service_rate_per_server (float) — tons/hr per processing bay
+            num_servers             (int)   — number of parallel bays
+
+    edges : list[dict]
+        Each dict must have:
+            source              (str)   — origin node id
+            target              (str)   — destination node id
+            num_trucks          (int)   — trucks on this route
+            trips_per_hour      (float) — trips per hour per truck
+        Optional:
+            distance_km         (float) — used to compute truck travel time
+            truck_capacity_tons (float) — tons per truck (default 10)
+
+    sim_time_hours : int
+        Total simulation duration in hours. Default 8 (one working shift).
+        Must finish in < 2 seconds for API use; keep to <= 24 for typical networks.
+
+    Returns
+    -------
+    list[dict]
+        Time-series snapshots, one every 0.25 h, plus t=0 initial state.
+        Each snapshot dict contains:
+            time                     (float) — simulation time in hours
+            {node_id}_queue          (int)   — trucks currently waiting
+            {node_id}_active         (int)   — trucks currently being served
+            {node_id}_capacity       (int)   — total server bays
+            {node_id}_utilization    (float) — active / capacity ratio
+        Only facility nodes appear (not residential source nodes).
+    """
+    return run_simulation(
+        nodes=nodes,
+        edges=edges,
+        sim_time_hours=sim_time_hours,
+        monitor_interval_hours=0.25,  # snapshot every 15 min
+        random_seed=42,               # reproducible by default
+    )
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("SIMPY ENGINE - Discrete Event Simulation Demo")
     print("=" * 60)
+
+    # ── MINIMAL 3-node / 2-edge demo (as specified) ─────────────────────────
+    #
+    #   source_zone ──(6 trucks/hr)──► transfer_hub ──(4 trucks/hr)──► landfill_X
+    #
+    print("\n--- MINIMAL 3-node, 2-edge demo (run_time_series_simulation) ---")
+
+    mini_nodes = [
+        {"id": "source_zone",  "type": "residential", "arrival_rate_tons_hr": 60,
+         "service_rate_per_server": 0,  "num_servers": 0},
+        {"id": "transfer_hub", "type": "transfer",    "arrival_rate_tons_hr": 0,
+         "service_rate_per_server": 20, "num_servers": 3},
+        {"id": "landfill_X",   "type": "landfill",    "arrival_rate_tons_hr": 0,
+         "service_rate_per_server": 15, "num_servers": 2},
+    ]
+    mini_edges = [
+        # 6 truck-trips/hr into transfer_hub
+        {"source": "source_zone",  "target": "transfer_hub",
+         "distance_km": 5, "num_trucks": 3, "truck_capacity_tons": 10, "trips_per_hour": 2},
+        # 4 truck-trips/hr into landfill_X
+        {"source": "transfer_hub", "target": "landfill_X",
+         "distance_km": 8, "num_trucks": 2, "truck_capacity_tons": 10, "trips_per_hour": 2},
+    ]
+
+    mini_series = run_time_series_simulation(mini_nodes, mini_edges, sim_time_hours=4)
+
+    print(f"  Snapshots generated : {len(mini_series)}  (expected ~17 for 4 h at 0.25 h interval)")
+    print("  First 4 snapshots:")
+    for snap in mini_series[:4]:
+        parts = [f"t={snap['time']:.2f}h"]
+        for k, v in snap.items():
+            if k != "time" and ("queue" in k or "util" in k):
+                parts.append(f"{k}={v}")
+        print("    " + " | ".join(parts))
+    print("  Last 2 snapshots:")
+    for snap in mini_series[-2:]:
+        parts = [f"t={snap['time']:.2f}h"]
+        for k, v in snap.items():
+            if k != "time" and ("queue" in k or "util" in k):
+                parts.append(f"{k}={v}")
+        print("    " + " | ".join(parts))
+    assert len(mini_series) >= 16, f"Expected >= 16 snapshots, got {len(mini_series)}"
+    print("  [ASSERT PASSED] snapshot count >= 16")
     
     # Demo nodes
     nodes = [

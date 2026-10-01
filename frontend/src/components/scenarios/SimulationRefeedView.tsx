@@ -87,7 +87,7 @@ export const SimulationRefeedView: React.FC = () => {
         ========================================================================
       */}
       <div className="p-6 sm:p-8 rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 text-xs font-mono font-medium mb-3 shadow-xs">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 text-xs font-sans font-medium mb-3 shadow-xs">
           <Sparkles className="w-3.5 h-3.5" />
           <span>STEP 03 &amp; 04 • WHAT-IF SIMULATION &amp; CIRCULAR RE-FEED</span>
         </div>
@@ -115,10 +115,10 @@ export const SimulationRefeedView: React.FC = () => {
           {/* Scenario Presets Bar */}
           <div className="rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider font-semibold text-stone-500">
+              <span className="text-xs font-semibold text-stone-700">
                 Scenario Presets
               </span>
-              <span className="text-xs font-mono font-medium text-emerald-800 px-3 py-0.5 rounded-full bg-emerald-100/90 border border-emerald-200 shadow-xs">
+              <span className="text-xs font-sans font-medium text-emerald-800 px-3 py-0.5 rounded-full bg-emerald-100/90 border border-emerald-200 shadow-xs">
                 Active: {activeScenarioName}
               </span>
             </div>
@@ -162,14 +162,14 @@ export const SimulationRefeedView: React.FC = () => {
                   What-If Parameter Adjusters
                 </h3>
               </div>
-              <span className="text-[10px] font-mono text-stone-400 font-medium">Live Injection</span>
+              <span className="text-xs font-sans text-stone-500 font-medium">Live Injection</span>
             </div>
 
             {/* Slider 1: Inflow Surge */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-600 font-mono">Municipal Inflow Rate (λ)</span>
-                <span className="font-bold text-stone-900 font-mono">{surgeMultiplier}x</span>
+                <span className="text-stone-600 font-sans">Municipal Inflow Rate (λ)</span>
+                <span className="font-semibold text-stone-900 font-sans tabular-nums">{surgeMultiplier}x</span>
               </div>
               <input
                 type="range"
@@ -180,7 +180,7 @@ export const SimulationRefeedView: React.FC = () => {
                 onChange={(e) => setSurgeMultiplier(parseFloat(e.target.value))}
                 className="w-full accent-slate-900 cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-stone-400">
+              <div className="flex justify-between text-[11px] font-sans text-stone-400 font-normal">
                 <span>0.5x Low Demand</span>
                 <span>1.0x Normal</span>
                 <span>2.5x Festival Surge</span>
@@ -190,8 +190,8 @@ export const SimulationRefeedView: React.FC = () => {
             {/* Slider 2: Processing Bays */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-600 font-mono">Additional Sorting Bays (c)</span>
-                <span className="font-bold text-emerald-800 font-mono">
+                <span className="text-stone-600 font-sans">Additional Sorting Bays (c)</span>
+                <span className="font-semibold text-emerald-800 font-sans tabular-nums">
                   {bayAdjustment > 0 ? `+${bayAdjustment}` : bayAdjustment} Bays
                 </span>
               </div>
@@ -204,7 +204,7 @@ export const SimulationRefeedView: React.FC = () => {
                 onChange={(e) => setBayAdjustment(parseInt(e.target.value))}
                 className="w-full accent-slate-900 cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-stone-400">
+              <div className="flex justify-between text-[11px] font-sans text-stone-400 font-normal">
                 <span>-2 Bays (Maintenance)</span>
                 <span>0 Nominal</span>
                 <span>+4 Emergency Expand</span>
@@ -214,8 +214,8 @@ export const SimulationRefeedView: React.FC = () => {
             {/* Slider 3: Traffic Diversion Rate */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-600 font-mono">Congestion Diversion Rate</span>
-                <span className="font-bold text-sky-800 font-mono">{divertRatePct}%</span>
+                <span className="text-stone-600 font-sans">Congestion Diversion Rate</span>
+                <span className="font-semibold text-sky-800 font-sans tabular-nums">{divertRatePct}%</span>
               </div>
               <input
                 type="range"
@@ -226,7 +226,7 @@ export const SimulationRefeedView: React.FC = () => {
                 onChange={(e) => setDivertRatePct(parseInt(e.target.value))}
                 className="w-full accent-slate-900 cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-stone-400">
+              <div className="flex justify-between text-[11px] font-sans text-stone-400 font-normal">
                 <span>0% Direct Routing</span>
                 <span>25% Balanced</span>
                 <span>50% Max Secondary Sinks</span>
@@ -236,8 +236,8 @@ export const SimulationRefeedView: React.FC = () => {
             {/* Slider 4: Fleet Electrification */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-600 font-mono">Fleet Electrification (EV Trucks)</span>
-                <span className="font-bold text-emerald-800 font-mono">{greenFleetPct}%</span>
+                <span className="text-stone-600 font-sans">Fleet Electrification (EV Trucks)</span>
+                <span className="font-semibold text-emerald-800 font-sans tabular-nums">{greenFleetPct}%</span>
               </div>
               <input
                 type="range"
@@ -248,7 +248,7 @@ export const SimulationRefeedView: React.FC = () => {
                 onChange={(e) => setGreenFleetPct(parseInt(e.target.value))}
                 className="w-full accent-slate-900 cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-stone-400">
+              <div className="flex justify-between text-[11px] font-sans text-stone-400 font-normal">
                 <span>0% Diesel Only</span>
                 <span>50% Hybrid Fleet</span>
                 <span>100% Zero-Emission</span>
@@ -282,25 +282,24 @@ export const SimulationRefeedView: React.FC = () => {
                 <h3 className="text-sm font-semibold text-stone-900">
                   Scenario Benchmark Comparison
                 </h3>
-                <p className="text-[11px] text-stone-500 font-mono">
+                <p className="text-xs text-stone-500 font-sans font-normal">
                   Wait times (min) vs Daily Cost Savings ($k)
                 </p>
               </div>
-              <span className="text-xs font-mono font-medium text-stone-500">Recharts Multi-Bar</span>
+              <span className="text-xs font-sans font-medium text-stone-400">Recharts Multi-Bar</span>
             </div>
 
             <div className="w-full h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-                  <XAxis dataKey="name" stroke="#a8a29e" tick={{ fontSize: 10, fill: '#78716c' }} />
-                  <YAxis stroke="#a8a29e" tick={{ fontSize: 10, fill: '#78716c' }} />
+                  <XAxis dataKey="name" stroke="#a8a29e" tick={{ fontSize: 10, fill: '#78716c', fontFamily: 'inherit', fontWeight: 500 }} />
+                  <YAxis stroke="#a8a29e" tick={{ fontSize: 10, fill: '#78716c', fontFamily: 'inherit', fontWeight: 500 }} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'rgba(255, 255, 255, 0.95)',
                       border: '1px solid rgba(255, 255, 255, 0.8)',
                       borderRadius: '16px',
-                      fontFamily: 'monospace',
                       fontSize: '11px',
                       color: '#1c1917',
                       boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
@@ -329,34 +328,34 @@ export const SimulationRefeedView: React.FC = () => {
                   Material Circularity Index (MCI) Scorecard
                 </h3>
               </div>
-              <span className="text-xs font-mono font-medium text-emerald-800 px-3 py-1 rounded-full bg-emerald-100/90 border border-emerald-200 shadow-xs">
+              <span className="text-xs font-sans font-medium text-emerald-800 px-3 py-1 rounded-full bg-emerald-100/90 border border-emerald-200 shadow-xs">
                 Grade A Certified
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3.5 font-mono text-center">
+            <div className="grid grid-cols-3 gap-3.5 font-sans text-center">
               <div className="p-4 rounded-2xl bg-white/60 border border-white/80 shadow-xs">
-                <span className="text-[10px] text-stone-500 uppercase font-semibold block mb-1">
+                <span className="text-xs text-stone-500 font-normal block mb-1">
                   MCI Rating
                 </span>
-                <span className="text-2xl font-bold text-stone-900">0.88</span>
-                <span className="text-[9px] text-stone-400 block mt-0.5">Scale 0 to 1.0</span>
+                <span className="text-3xl font-semibold tracking-tight text-stone-900 tabular-nums">0.88</span>
+                <span className="text-xs text-stone-400 font-normal block mt-1">Scale 0 to 1.0</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-white/60 border border-white/80 shadow-xs">
-                <span className="text-[10px] text-stone-500 uppercase font-semibold block mb-1">
+                <span className="text-xs text-stone-500 font-normal block mb-1">
                   Landfill Diversion
                 </span>
-                <span className="text-2xl font-bold text-sky-800">93.4%</span>
-                <span className="text-[9px] text-stone-400 block mt-0.5">Metropolitan Grid</span>
+                <span className="text-3xl font-semibold tracking-tight text-sky-800 tabular-nums">93.4%</span>
+                <span className="text-xs text-stone-400 font-normal block mt-1">Metropolitan Grid</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-white/60 border border-white/80 shadow-xs">
-                <span className="text-[10px] text-stone-500 uppercase font-semibold block mb-1">
+                <span className="text-xs text-stone-500 font-normal block mb-1">
                   CO2e Displaced
                 </span>
-                <span className="text-2xl font-bold text-emerald-800">142.8</span>
-                <span className="text-[9px] text-stone-400 block mt-0.5">MT / Day</span>
+                <span className="text-3xl font-semibold tracking-tight text-emerald-800 tabular-nums">142.8</span>
+                <span className="text-xs text-stone-400 font-normal block mt-1">MT / Day</span>
               </div>
             </div>
           </div>
@@ -367,7 +366,7 @@ export const SimulationRefeedView: React.FC = () => {
               <span className="text-xs font-semibold text-stone-900 block">
                 Closed-Loop Recovery Multiplier
               </span>
-              <span className="text-[11px] text-stone-500 font-mono">
+              <span className="text-xs text-stone-500 font-sans font-normal">
                 Scale optical NIR sorting efficiency
               </span>
             </div>
@@ -382,18 +381,18 @@ export const SimulationRefeedView: React.FC = () => {
                 onChange={(e) => setRefeedScale(parseFloat(e.target.value))}
                 className="accent-slate-900 w-28 cursor-pointer"
               />
-              <span className="text-xs font-mono font-bold text-stone-900">{refeedScale}x</span>
+              <span className="text-xs font-sans font-semibold text-stone-900 tabular-nums">{refeedScale}x</span>
             </div>
           </div>
 
           {/* 4 Valorized Secondary Material Feedstocks */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono uppercase tracking-wider font-semibold text-stone-500">
+              <span className="text-xs font-semibold text-stone-700">
                 High-Purity Secondary Streams
               </span>
-              <span className="text-xs font-mono text-stone-700">
-                Total Output: <span className="text-emerald-800 font-bold">{Math.round(totalTonnage)} MT/Day</span>
+              <span className="text-xs font-sans text-stone-600">
+                Total Output: <span className="text-emerald-800 font-semibold tabular-nums">{Math.round(totalTonnage)} MT/Day</span>
               </span>
             </div>
 
@@ -411,33 +410,33 @@ export const SimulationRefeedView: React.FC = () => {
                       <h4 className="text-sm font-semibold text-stone-900">
                         {stream.material}
                       </h4>
-                      <span className="text-[10px] text-stone-500 font-mono">
+                      <span className="text-xs text-stone-500 font-sans font-normal">
                         {stream.secondaryUse}
                       </span>
                     </div>
                   </div>
 
-                  <span className="px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200 font-mono text-[10px] font-semibold shadow-xs">
-                    {stream.purityPct}% PURITY
+                  <span className="px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200 font-sans text-xs font-medium shadow-xs">
+                    {stream.purityPct}% Purity
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-xs font-mono">
+                <div className="grid grid-cols-3 gap-2 text-xs font-sans">
                   <div className="p-2.5 rounded-xl bg-white/60 border border-white/80">
-                    <span className="block text-[9px] text-stone-400 uppercase tracking-wider">Tonnage</span>
-                    <span className="font-bold text-stone-900">{stream.calcTonnage} t/day</span>
+                    <span className="block text-xs text-stone-500 font-normal">Tonnage</span>
+                    <span className="font-semibold text-stone-900 tabular-nums">{stream.calcTonnage} t/day</span>
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-white/60 border border-white/80">
-                    <span className="block text-[9px] text-stone-400 uppercase tracking-wider">Market Value</span>
-                    <span className="font-bold text-sky-800">
+                    <span className="block text-xs text-stone-500 font-normal">Market Value</span>
+                    <span className="font-semibold text-sky-800 tabular-nums">
                       ${Math.round(stream.dailyRevenue / 1000)}k / day
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-white/60 border border-white/80">
-                    <span className="block text-[9px] text-stone-400 uppercase tracking-wider">CO2 Averted</span>
-                    <span className="font-bold text-emerald-800">
+                    <span className="block text-xs text-stone-500 font-normal">CO2 Averted</span>
+                    <span className="font-semibold text-emerald-800 tabular-nums">
                       {stream.dailyCo2Offset} t/day
                     </span>
                   </div>
@@ -447,21 +446,21 @@ export const SimulationRefeedView: React.FC = () => {
           </div>
 
           {/* Revenue & Emissions Mass Balance Summary */}
-          <div className="p-5 rounded-[28px] bg-white/80 backdrop-blur-2xl border border-white/85 shadow-[0_15px_35px_rgba(15,23,42,0.04)] flex items-center justify-between text-xs font-mono">
+          <div className="p-5 rounded-[28px] bg-white/80 backdrop-blur-2xl border border-white/85 shadow-[0_15px_35px_rgba(15,23,42,0.04)] flex items-center justify-between text-xs font-sans">
             <div>
-              <span className="text-[10px] text-stone-400 uppercase font-semibold block">
+              <span className="text-xs text-stone-500 font-normal block mb-1">
                 Net Secondary Circular Value
               </span>
-              <span className="text-xl font-bold text-stone-900 font-sans">
+              <span className="text-2xl font-semibold tracking-tight text-stone-900 tabular-nums">
                 ${Math.round(totalDailyRevenue).toLocaleString()} USD / Day
               </span>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] text-stone-400 uppercase font-semibold block">
+              <span className="text-xs text-stone-500 font-normal block mb-1">
                 Net Fossil Displacement
               </span>
-              <span className="text-xl font-bold text-emerald-800 font-sans">
+              <span className="text-2xl font-semibold tracking-tight text-emerald-800 tabular-nums">
                 {Math.round(totalDailyCo2Offset * 10) / 10} MT CO2e / Day
               </span>
             </div>

@@ -72,7 +72,7 @@ export const OverviewView: React.FC = () => {
                   <span className="text-3xl font-semibold tracking-tight text-stone-900">
                     1,482
                   </span>
-                  <span className="text-xs text-stone-400 font-mono">MT/Day</span>
+                  <span className="text-xs text-stone-400 font-sans font-medium">MT/Day</span>
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@ export const OverviewView: React.FC = () => {
                   <span className="text-3xl font-semibold tracking-tight text-stone-900">
                     -64%
                   </span>
-                  <span className="text-xs text-stone-400 font-mono">Wait Time</span>
+                  <span className="text-xs text-stone-400 font-sans font-medium">Wait Time</span>
                 </div>
               </div>
             </div>
@@ -142,7 +142,7 @@ export const OverviewView: React.FC = () => {
                   <span className="text-3xl font-semibold tracking-tight text-stone-900">
                     {criticalCount}
                   </span>
-                  <span className="text-xs text-stone-400 font-mono">Critical Nodes</span>
+                  <span className="text-xs text-stone-400 font-sans font-medium">Critical Nodes</span>
                 </div>
               </div>
             </div>
@@ -175,7 +175,7 @@ export const OverviewView: React.FC = () => {
                   <span className="text-3xl font-semibold tracking-tight text-stone-900">
                     12
                   </span>
-                  <span className="text-xs text-stone-400 font-mono">IoT Nodes</span>
+                  <span className="text-xs text-stone-400 font-sans font-medium">IoT Nodes</span>
                 </div>
               </div>
             </div>
@@ -244,13 +244,13 @@ export const OverviewView: React.FC = () => {
                 <span className="text-xs font-semibold text-stone-800 block">
                   Material Inflow Dynamics
                 </span>
-                <span className="text-[10px] text-stone-400 font-mono">
+                <span className="text-xs text-stone-500 font-sans font-normal">
                   Municipal tonnage intake curve
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-semibold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-sans font-medium">
                   Peak Inflow: 742 MT
                 </span>
                 <div className="flex items-center gap-1 text-[11px] font-medium text-stone-600 bg-white/80 px-2 py-0.5 rounded-full border border-stone-200/60 shadow-xs cursor-pointer">
@@ -270,8 +270,8 @@ export const OverviewView: React.FC = () => {
                       <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="time" stroke="#a8a29e" tick={{ fontSize: 9, fill: '#78716c' }} />
-                  <YAxis stroke="#a8a29e" tick={{ fontSize: 9, fill: '#78716c' }} unit=" t" />
+                  <XAxis dataKey="time" stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c', fontFamily: 'inherit', fontWeight: 500 }} />
+                  <YAxis stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c', fontFamily: 'inherit', fontWeight: 500 }} unit="t" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -304,11 +304,11 @@ export const OverviewView: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-stone-900">
+                    <span className="font-sans font-semibold text-xs text-stone-900">
                       SWARM-N01-OPT
                     </span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      POLYMER
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-medium bg-stone-100/80 text-stone-700 border border-stone-200/60">
+                      Polymer
                     </span>
                   </div>
                   <span className="text-[11px] text-stone-500 block">
@@ -318,7 +318,7 @@ export const OverviewView: React.FC = () => {
               </div>
 
               {/* Circular Gauge / Metrics */}
-              <div className="flex items-center gap-4 text-xs font-mono">
+              <div className="flex items-center gap-4 text-xs font-sans tabular-nums">
                 <div className="flex items-center gap-1.5">
                   {/* Circular Gauge Ring */}
                   <div className="relative w-8 h-8 flex items-center justify-center">
@@ -363,11 +363,11 @@ export const OverviewView: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-stone-900">
+                    <span className="font-sans font-semibold text-xs text-stone-900">
                       SWARM-N02-CMP
                     </span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-sky-50 text-sky-700 border border-sky-200">
-                      ORGANIC
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-medium bg-stone-100/80 text-stone-700 border border-stone-200/60">
+                      Organic
                     </span>
                   </div>
                   <span className="text-[11px] text-stone-500 block">
@@ -377,7 +377,7 @@ export const OverviewView: React.FC = () => {
               </div>
 
               {/* Circular Gauge / Metrics */}
-              <div className="flex items-center gap-4 text-xs font-mono">
+              <div className="flex items-center gap-4 text-xs font-sans tabular-nums">
                 <div className="flex items-center gap-1.5">
                   <div className="relative w-8 h-8 flex items-center justify-center">
                     <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
@@ -421,11 +421,11 @@ export const OverviewView: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-stone-900">
+                    <span className="font-sans font-semibold text-xs text-stone-900">
                       SWARM-E01-MET
                     </span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-amber-50 text-amber-700 border border-amber-200">
-                      METALS
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-medium bg-stone-100/80 text-stone-700 border border-stone-200/60">
+                      Metals
                     </span>
                   </div>
                   <span className="text-[11px] text-stone-500 block">
@@ -435,7 +435,7 @@ export const OverviewView: React.FC = () => {
               </div>
 
               {/* Circular Gauge / Metrics */}
-              <div className="flex items-center gap-4 text-xs font-mono">
+              <div className="flex items-center gap-4 text-xs font-sans tabular-nums">
                 <div className="flex items-center gap-1.5">
                   <div className="relative w-8 h-8 flex items-center justify-center">
                     <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">

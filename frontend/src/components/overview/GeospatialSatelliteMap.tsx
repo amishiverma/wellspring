@@ -73,21 +73,19 @@ export const GeospatialSatelliteMap: React.FC<GeospatialSatelliteMapProps> = ({ 
 
     mapInstanceRef.current = map;
 
-    // Esri World Imagery (Photorealistic Satellite Layer)
+    // Esri World Imagery (Photorealistic Satellite Layer - 100% Free & Keyless)
     const satelliteTile = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {
         maxZoom: 19,
-        subdomains: ['a', 'b', 'c', 'd'],
       }
     );
 
-    // CartoDB Voyager / Streets (Clean Street Layer)
+    // Free & Keyless OpenStreetMap Layer (Zero Watermarks, No API Key Required)
     const streetTile = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
         maxZoom: 19,
-        subdomains: 'abcd',
       }
     );
 
@@ -289,7 +287,7 @@ export const GeospatialSatelliteMap: React.FC<GeospatialSatelliteMapProps> = ({ 
           <div class="absolute left-1/2 -top-12 -translate-x-1/2 pointer-events-none whitespace-nowrap z-20">
             <div class="px-3 py-1.5 rounded-2xl bg-slate-900/85 backdrop-blur-md border border-white/20 text-white shadow-xl flex flex-col items-center">
               <span class="font-sans font-semibold text-[11px] leading-tight text-white">${displayName}</span>
-              <span class="font-mono text-[9px] text-emerald-400 font-medium leading-tight">${throughputLabel}</span>
+              <span class="font-sans text-[10px] text-emerald-400 font-medium leading-tight">${throughputLabel}</span>
             </div>
             <!-- Arrow tip -->
             <div class="w-2 h-2 bg-slate-900/85 rotate-45 mx-auto -mt-1 border-r border-b border-white/20"></div>

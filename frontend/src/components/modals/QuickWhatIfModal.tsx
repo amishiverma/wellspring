@@ -57,7 +57,7 @@ export const QuickWhatIfModal: React.FC = () => {
                 <h3 className="text-lg font-sans font-bold text-stone-900 tracking-tight">
                   Instant What-If Simulation Runner
                 </h3>
-                <p className="text-xs text-stone-500 font-mono">
+                <p className="text-xs text-stone-500 font-sans font-normal">
                   Inject live variables into Erlang-C and network routing
                 </p>
               </div>
@@ -73,33 +73,33 @@ export const QuickWhatIfModal: React.FC = () => {
 
           {/* Quick Presets */}
           <div className="mt-4">
-            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-stone-500 block mb-2">
+            <span className="text-xs font-semibold text-stone-700 block mb-2">
               Quick Preset Contingencies:
             </span>
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => applyPresetScenario('surge')}
-                className="p-3 rounded-2xl bg-white/70 hover:bg-rose-50/70 border border-white/80 hover:border-rose-200 text-left transition text-xs font-mono group shadow-xs"
+                className="p-3 rounded-2xl bg-white/70 hover:bg-rose-50/70 border border-white/80 hover:border-rose-200 text-left transition text-xs font-sans group shadow-xs"
               >
-                <span className="text-rose-700 font-bold block mb-0.5">● 1.6x Peak Surge</span>
-                <span className="text-stone-500 text-[10px]">Test queue buffer limits</span>
+                <span className="text-rose-700 font-semibold block mb-0.5">● 1.6x Peak Surge</span>
+                <span className="text-stone-500 text-xs">Test queue buffer limits</span>
               </button>
               <button
                 onClick={() => applyPresetScenario('mitigated')}
-                className="p-3 rounded-2xl bg-white/70 hover:bg-emerald-50/70 border border-white/80 hover:border-emerald-200 text-left transition text-xs font-mono group shadow-xs"
+                className="p-3 rounded-2xl bg-white/70 hover:bg-emerald-50/70 border border-white/80 hover:border-emerald-200 text-left transition text-xs font-sans group shadow-xs"
               >
-                <span className="text-emerald-800 font-bold block mb-0.5">● Dynamic Mitigate</span>
-                <span className="text-stone-500 text-[10px]">+2 Bays, 25% Reroute</span>
+                <span className="text-emerald-800 font-semibold block mb-0.5">● Dynamic Mitigate</span>
+                <span className="text-stone-500 text-xs">+2 Bays, 25% Reroute</span>
               </button>
             </div>
           </div>
 
           {/* Sliders */}
-          <div className="mt-5 space-y-4 font-mono text-xs">
+          <div className="mt-5 space-y-4 font-sans text-xs">
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-stone-600">Inflow Surge Rate:</span>
-                <span className="text-stone-900 font-bold">{surgeMultiplier.toFixed(1)}x</span>
+                <span className="text-stone-900 font-semibold tabular-nums">{surgeMultiplier.toFixed(1)}x</span>
               </div>
               <input
                 type="range"
@@ -115,7 +115,7 @@ export const QuickWhatIfModal: React.FC = () => {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-stone-600">Dynamic Bays Expansion:</span>
-                <span className="text-emerald-800 font-bold">
+                <span className="text-emerald-800 font-semibold tabular-nums">
                   {bayAdjustment > 0 ? `+${bayAdjustment}` : bayAdjustment} Bays
                 </span>
               </div>
@@ -133,7 +133,7 @@ export const QuickWhatIfModal: React.FC = () => {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-stone-600">Traffic Inflow Diversion:</span>
-                <span className="text-sky-800 font-bold">{divertRatePct}%</span>
+                <span className="text-sky-800 font-semibold tabular-nums">{divertRatePct}%</span>
               </div>
               <input
                 type="range"
@@ -148,16 +148,16 @@ export const QuickWhatIfModal: React.FC = () => {
           </div>
 
           {/* Projected Outcomes Preview */}
-          <div className="mt-5 p-4 rounded-2xl bg-white/60 border border-white/80 grid grid-cols-2 gap-3 text-center font-mono">
+          <div className="mt-5 p-4 rounded-2xl bg-white/60 border border-white/80 grid grid-cols-2 gap-3 text-center font-sans">
             <div className="p-2.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
-              <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold block mb-0.5">Wait Reduction</span>
-              <span className="text-lg font-bold text-emerald-800">
+              <span className="text-xs text-stone-500 font-normal block mb-1">Wait Reduction</span>
+              <span className="text-2xl font-semibold tracking-tight text-emerald-800 tabular-nums">
                 -{projectedWaitReduction}%
               </span>
             </div>
             <div className="p-2.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
-              <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold block mb-0.5">Est. CO2e Saved</span>
-              <span className="text-lg font-bold text-sky-800">
+              <span className="text-xs text-stone-500 font-normal block mb-1">Est. CO2e Saved</span>
+              <span className="text-2xl font-semibold tracking-tight text-sky-800 tabular-nums">
                 +{projectedCo2Savings} MT / day
               </span>
             </div>
@@ -167,7 +167,7 @@ export const QuickWhatIfModal: React.FC = () => {
           <div className="mt-6 flex items-center justify-end gap-2.5">
             <button
               onClick={() => setIsQuickModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-white/80 hover:bg-white text-stone-700 text-xs font-mono transition border border-stone-200/60 shadow-xs"
+              className="px-4 py-2 rounded-full bg-white/80 hover:bg-white text-stone-700 text-xs font-sans font-medium transition border border-stone-200/60 shadow-xs"
             >
               Cancel
             </button>

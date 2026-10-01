@@ -78,14 +78,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+          <p className="text-xs font-sans font-medium text-stone-500 mb-1">
             {title}
           </p>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+            <span className="text-2xl sm:text-3xl font-sans font-semibold tracking-tight text-white tabular-nums">
               {value}
             </span>
-            {unit && <span className="text-xs font-mono text-slate-400">{unit}</span>}
+            {unit && <span className="text-xs font-sans text-stone-400 font-medium">{unit}</span>}
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
         {change && (
           <div
-            className={`flex items-center gap-1 font-mono text-[11px] ${
+            className={`flex items-center gap-1 font-sans text-xs font-medium ${
               trend === 'neutral'
                 ? 'text-slate-400'
                 : isGood

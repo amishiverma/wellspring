@@ -46,7 +46,7 @@ export const GravFluxView: React.FC = () => {
         ========================================================================
       */}
       <div className="p-6 sm:p-8 rounded-[32px] bg-white/75 backdrop-blur-2xl border border-white/85 shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 text-xs font-mono font-medium mb-3 shadow-xs">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 text-xs font-sans font-medium mb-3 shadow-xs">
           <Layers className="w-3.5 h-3.5" />
           <span>STEP 02 • SPATIAL GRAV-FLUX TWIN &amp; QUEUEING DYNAMICS</span>
         </div>
@@ -71,13 +71,13 @@ export const GravFluxView: React.FC = () => {
             <h3 className="text-sm font-semibold text-stone-900">
               Spatial Gravitational Vector Field
             </h3>
-            <p className="text-xs text-stone-500 font-mono">
+            <p className="text-xs text-stone-500 font-sans font-normal">
               Live particle flux converging into facility potential wells
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono text-stone-500">Field Flux:</span>
+            <span className="text-xs font-sans text-stone-500 font-normal">Field Flux:</span>
             <input
               type="range"
               min="0.5"
@@ -87,13 +87,13 @@ export const GravFluxView: React.FC = () => {
               onChange={(e) => setSpatialIntensity(parseFloat(e.target.value))}
               className="accent-slate-900 w-28 cursor-pointer"
             />
-            <span className="text-xs font-mono text-stone-900 font-bold">{spatialIntensity}x</span>
+            <span className="text-xs font-sans text-stone-900 font-semibold tabular-nums">{spatialIntensity}x</span>
           </div>
         </div>
 
         <div className="w-full h-72 rounded-[28px] overflow-hidden bg-slate-950 relative border border-white/40 shadow-inner">
           <GravFluxCanvas intensity={spatialIntensity} className="w-full h-full" />
-          <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-white/80 text-[10px] font-mono font-medium text-stone-800 shadow-sm">
+          <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-white/80 backdrop-blur-md border border-white/80 text-[11px] font-sans font-medium text-stone-800 shadow-sm">
             Newtonian Vector Simulator: 8 Sinks Active
           </div>
         </div>
@@ -114,45 +114,45 @@ export const GravFluxView: React.FC = () => {
               Core Queueing Theory Formulation (M/M/c Erlang-C)
             </h3>
           </div>
-          <span className="text-xs font-mono font-medium text-emerald-800 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/60 shadow-xs">
-            Tanishq Core Math Engine
+          <span className="text-xs font-sans font-medium text-emerald-800 px-3 py-1 rounded-full bg-emerald-100/80 border border-emerald-200/60 shadow-xs">
+            Core Math Engine
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-sans">
           <div className="p-5 rounded-2xl bg-white/60 border border-white/80 space-y-1.5 shadow-xs">
-            <span className="text-stone-400 text-[10px] uppercase font-bold tracking-wider block">
+            <span className="text-stone-500 text-xs font-semibold block">
               Traffic Intensity (ρ)
             </span>
-            <div className="text-xl font-bold text-stone-900 font-mono">
+            <div className="text-xl font-semibold tracking-tight text-stone-900 tabular-nums">
               ρ = λ / (c · μ)
             </div>
-            <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+            <p className="text-xs text-stone-600 font-sans leading-relaxed font-normal">
               Where λ is arrival rate, c is parallel service bays, and μ is service rate. If ρ ≥ 0.85,
               congestive bottleneck triggers.
             </p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/60 border border-white/80 space-y-1.5 shadow-xs">
-            <span className="text-stone-400 text-[10px] uppercase font-bold tracking-wider block">
+            <span className="text-stone-500 text-xs font-semibold block">
               Erlang-C Delay Probability
             </span>
-            <div className="text-xl font-bold text-sky-800 font-mono">
+            <div className="text-xl font-semibold tracking-tight text-sky-800 tabular-nums">
               P(W &gt; 0) = C(c, a)
             </div>
-            <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+            <p className="text-xs text-stone-600 font-sans leading-relaxed font-normal">
               Probability that an arriving hauler must queue outside facility intake doors.
             </p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/60 border border-white/80 space-y-1.5 shadow-xs">
-            <span className="text-stone-400 text-[10px] uppercase font-bold tracking-wider block">
+            <span className="text-stone-500 text-xs font-semibold block">
               Mean Queue Length &amp; Delay
             </span>
-            <div className="text-xl font-bold text-emerald-800 font-mono">
+            <div className="text-xl font-semibold tracking-tight text-emerald-800 tabular-nums">
               Lq = P(W&gt;0) · [ρ / (1 - ρ)]
             </div>
-            <p className="text-[11px] text-stone-600 font-sans leading-relaxed">
+            <p className="text-xs text-stone-600 font-sans leading-relaxed font-normal">
               Average number of idling trucks staged in bay queue. Mean delay Wq = Lq / λ.
             </p>
           </div>
@@ -170,18 +170,18 @@ export const GravFluxView: React.FC = () => {
             <h3 className="font-semibold text-stone-900 text-base">
               24-Hour Predictive Jam Accumulation Curve
             </h3>
-            <p className="text-xs text-stone-500 font-mono">
+            <p className="text-xs text-stone-500 font-sans font-normal">
               Simulated queue formation across major municipal nodes vs emergency diversion threshold
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs font-mono">
-            <span className="flex items-center gap-1.5 text-rose-700 font-medium">
+          <div className="flex items-center gap-3 text-xs font-sans font-medium">
+            <span className="flex items-center gap-1.5 text-rose-700">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Apex MRF Queue
             </span>
-            <span className="flex items-center gap-1.5 text-emerald-700 font-medium">
+            <span className="flex items-center gap-1.5 text-emerald-700">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Central Hub Queue
             </span>
-            <span className="flex items-center gap-1.5 text-stone-600 font-medium">
+            <span className="flex items-center gap-1.5 text-stone-600">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Inflow Surge (λ)
             </span>
           </div>
@@ -201,14 +201,13 @@ export const GravFluxView: React.FC = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-              <XAxis dataKey="hour" stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c' }} />
-              <YAxis stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c' }} unit=" t" />
+              <XAxis dataKey="hour" stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c', fontFamily: 'inherit', fontWeight: 500 }} />
+              <YAxis stroke="#a8a29e" tick={{ fontSize: 11, fill: '#78716c', fontFamily: 'inherit', fontWeight: 500 }} unit=" t" />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   border: '1px solid rgba(255, 255, 255, 0.8)',
                   borderRadius: '16px',
-                  fontFamily: 'monospace',
                   fontSize: '12px',
                   color: '#1c1917',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
@@ -248,19 +247,19 @@ export const GravFluxView: React.FC = () => {
             <h3 className="font-semibold text-stone-900 text-base">
               Facility-by-Facility Erlang-C Telemetry Table
             </h3>
-            <p className="text-xs text-stone-500 font-mono">
+            <p className="text-xs text-stone-500 font-sans font-normal">
               Live mathematical state for all 8 facilities. Click facility to adjust arrival / bay parameters.
             </p>
           </div>
-          <span className="text-xs font-mono font-medium px-3 py-1 rounded-full bg-white/80 text-stone-700 border border-white/80 shadow-xs">
+          <span className="text-xs font-sans font-medium px-3 py-1 rounded-full bg-white/80 text-stone-700 border border-white/80 shadow-xs">
             {nodes.length} Facilities Monitored
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left font-mono text-xs">
+          <table className="w-full text-left font-sans text-xs">
             <thead>
-              <tr className="border-b border-stone-200/60 text-stone-500 text-[10px] uppercase bg-stone-100/50">
+              <tr className="border-b border-stone-200/60 text-stone-500 text-[10px] uppercase bg-stone-100/50 font-semibold">
                 <th className="py-3 px-4 rounded-l-xl">Facility Name</th>
                 <th className="py-3 px-3">Arrival λ (t/h)</th>
                 <th className="py-3 px-3">Service μ (t/h)</th>
@@ -297,12 +296,12 @@ export const GravFluxView: React.FC = () => {
                         <span>{fac.name}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-3 text-stone-600">{fac.arrivalRate}</td>
-                    <td className="py-3.5 px-3 text-stone-600">{fac.serviceRate}</td>
-                    <td className="py-3.5 px-3 font-bold text-stone-900">{fac.activeBays}</td>
+                    <td className="py-3.5 px-3 text-stone-600 tabular-nums">{fac.arrivalRate}</td>
+                    <td className="py-3.5 px-3 text-stone-600 tabular-nums">{fac.serviceRate}</td>
+                    <td className="py-3.5 px-3 font-semibold text-stone-900 tabular-nums">{fac.activeBays}</td>
                     <td className="py-3.5 px-3">
                       <span
-                        className={`font-bold ${
+                        className={`font-semibold tabular-nums ${
                           isCritical
                             ? 'text-rose-600'
                             : isWarning
@@ -313,13 +312,13 @@ export const GravFluxView: React.FC = () => {
                         {Math.round(fac.qCalc.utilization * 100)}%
                       </span>
                     </td>
-                    <td className="py-3.5 px-3 text-stone-700">
+                    <td className="py-3.5 px-3 text-stone-700 tabular-nums">
                       {fac.qCalc.queueLength} trucks
                     </td>
-                    <td className="py-3.5 px-3 text-sky-800 font-semibold">{fac.qCalc.avgWaitMinutes}m</td>
+                    <td className="py-3.5 px-3 text-sky-800 font-semibold tabular-nums">{fac.qCalc.avgWaitMinutes}m</td>
                     <td className="py-3.5 px-3">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-sans font-medium border ${
                           isCritical
                             ? 'bg-rose-100 text-rose-800 border-rose-200'
                             : isWarning
@@ -327,7 +326,11 @@ export const GravFluxView: React.FC = () => {
                             : 'bg-emerald-100 text-emerald-800 border-emerald-200'
                         }`}
                       >
-                        {fac.qCalc.severity.toUpperCase()}
+                        {fac.qCalc.severity === 'critical'
+                          ? 'Critical'
+                          : fac.qCalc.severity === 'warning'
+                          ? 'Elevated'
+                          : 'Nominal'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
@@ -336,7 +339,7 @@ export const GravFluxView: React.FC = () => {
                           e.stopPropagation();
                           addBaysToNode(fac.id, 1);
                         }}
-                        className="px-3 py-1 rounded-full bg-white/80 hover:bg-white text-stone-800 text-[10px] font-mono font-medium transition border border-stone-200 shadow-xs hover:shadow-sm"
+                        className="px-3 py-1 rounded-full bg-white/80 hover:bg-white text-stone-800 text-xs font-sans font-medium transition border border-stone-200 shadow-xs hover:shadow-sm"
                         title="Add +1 Processing Bay"
                       >
                         +1 Bay

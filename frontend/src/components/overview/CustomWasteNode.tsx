@@ -106,43 +106,43 @@ export const CustomWasteNode = memo(({ data }: NodeProps<WasteNode>) => {
           <span className="p-1 rounded-md bg-white/[0.04] border border-white/[0.08]">
             {typeConfig.icon}
           </span>
-          <span className="text-[10px] font-mono tracking-wider text-slate-400 font-semibold uppercase">
+          <span className="text-[10px] font-sans text-slate-400 font-medium">
             {typeConfig.badge}
           </span>
         </div>
 
         {pulseRed ? (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-rose-400 bg-rose-500/20 px-2 py-0.5 rounded-full border border-rose-500/40">
+          <span className="flex items-center gap-1.5 text-[10px] font-medium text-rose-300 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-500/40">
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
             </span>
-            BOTTLENECK
+            Bottleneck
           </span>
         ) : isWarning ? (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+          <span className="flex items-center gap-1 text-[10px] font-medium text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
             <AlertTriangle className="w-2.5 h-2.5" />
-            ELEVATED
+            Elevated
           </span>
         ) : (
-          <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+          <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
             <CheckCircle2 className="w-2.5 h-2.5" />
-            NOMINAL
+            Nominal
           </span>
         )}
       </div>
 
       {/* Facility title */}
-      <h4 className="text-sm font-display font-semibold text-white tracking-tight line-clamp-1 mb-2">
+      <h4 className="text-sm font-sans font-semibold text-white tracking-tight line-clamp-1 mb-2">
         {name}
       </h4>
 
       {/* Utilization bar */}
       <div className="mb-3">
-        <div className="flex items-center justify-between text-[11px] font-mono mb-1">
-          <span className="text-slate-400">Traffic Intensity (ρ)</span>
+        <div className="flex items-center justify-between text-[11px] font-sans font-medium mb-1">
+          <span className="text-slate-400">Traffic Intensity</span>
           <span
-            className={`font-bold ${
+            className={`font-semibold tabular-nums ${
               isCritical ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-emerald-400'
             }`}
           >
@@ -166,16 +166,16 @@ export const CustomWasteNode = memo(({ data }: NodeProps<WasteNode>) => {
       </div>
 
       {/* Queue & Bays stats footer */}
-      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.06] text-center font-mono">
+      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.06] text-center font-sans">
         <div className="bg-white/[0.02] p-1.5 rounded-lg border border-white/[0.04]">
-          <span className="block text-[9px] text-slate-400 uppercase">Bays (c)</span>
-          <span className="text-xs font-bold text-white">{activeBays}</span>
+          <span className="block text-[9px] text-slate-400 font-medium">Bays (c)</span>
+          <span className="text-xs font-semibold text-white tabular-nums">{activeBays}</span>
         </div>
 
         <div className="bg-white/[0.02] p-1.5 rounded-lg border border-white/[0.04]">
-          <span className="block text-[9px] text-slate-400 uppercase">Queue (Lq)</span>
+          <span className="block text-[9px] text-slate-400 font-medium">Queue Length</span>
           <span
-            className={`text-xs font-bold ${
+            className={`text-xs font-semibold tabular-nums ${
               queueLength > 5 ? 'text-rose-400' : 'text-slate-200'
             }`}
           >
@@ -184,11 +184,11 @@ export const CustomWasteNode = memo(({ data }: NodeProps<WasteNode>) => {
         </div>
 
         <div className="bg-white/[0.02] p-1.5 rounded-lg border border-white/[0.04]">
-          <span className="block text-[9px] text-slate-400 uppercase flex items-center justify-center gap-0.5">
-            <Clock className="w-2.5 h-2.5 text-slate-400" /> Wq
+          <span className="block text-[9px] text-slate-400 font-medium flex items-center justify-center gap-0.5">
+            <Clock className="w-2.5 h-2.5 text-slate-400" /> Avg Delay
           </span>
           <span
-            className={`text-xs font-bold ${
+            className={`text-xs font-semibold tabular-nums ${
               avgWaitMinutes > 15 ? 'text-rose-400' : 'text-cyan-400'
             }`}
           >

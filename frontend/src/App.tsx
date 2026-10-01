@@ -142,7 +142,7 @@ export const App: React.FC = () => {
             </span>
           </div>
 
-          <div className="text-[10px] text-stone-400 font-mono">
+          <div className="text-[10px] text-stone-400 font-sans font-medium">
             Erlang-C M/M/c • Photorealistic Satellite • 2.68 kg CO2e/L Diesel Standard
           </div>
         </div>

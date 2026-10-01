@@ -68,7 +68,7 @@ export const Navbar: React.FC = () => {
               <span className="font-bold text-xs tracking-wide text-stone-900 block leading-tight">
                 WELLSPRING
               </span>
-              <span className="text-[9px] font-mono text-stone-500 block uppercase tracking-wider leading-tight">
+              <span className="text-[10px] font-sans font-medium text-stone-500 block uppercase tracking-wider leading-tight">
                 TWIN V2.4
               </span>
             </div>

@@ -65,7 +65,7 @@ export const LandingPageView: React.FC = () => {
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-12 py-6 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2">
           <span className="font-repose text-2xl sm:text-3xl tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-            WellSpring
+            Wellspring
           </span>
         </div>
 
@@ -97,7 +97,9 @@ export const LandingPageView: React.FC = () => {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <h1 className="font-repose text-7xl sm:text-8xl md:text-9xl text-white font-normal leading-[0.92] tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
-              WellSpring
+              Flow without
+              <br />
+              friction.
             </h1>
 
             {/* Delicate Horizontal Rule */}
@@ -105,12 +107,12 @@ export const LandingPageView: React.FC = () => {
 
             {/* Subline with Spaced Tracking */}
             <p className="font-sans text-[11px] sm:text-xs tracking-[0.28em] text-white/95 uppercase font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-              AUTONOMOUS WASTE FLOW BOTTLENECK ANALYZER &amp; DIGITAL TWIN
+              Predictive intelligence for materials that never stop moving.
             </p>
           </motion.div>
         </div>
 
-        {/* Bottom Bar: Center "SCROLL" + Bottom-Right Project Identification */}
+        {/* Bottom Bar: Center "SCROLL" + Bottom-Right Status Card */}
         <div className="relative w-full flex items-end justify-between">
           <div className="hidden sm:block sm:w-48 text-[11px] font-mono text-white/70 tracking-wider drop-shadow-md">
             TSEC MINITHON '26
@@ -128,19 +130,19 @@ export const LandingPageView: React.FC = () => {
             <ChevronDown className="w-4 h-4 text-white/90 group-hover:text-white transition -mt-1 animate-bounce" />
           </div>
 
-          {/* Bottom Right: WELLSPRING DIGITAL TWIN */}
+          {/* Bottom Right: Status Card */}
           <div className="text-right font-sans drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
             <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-white/70 uppercase block mb-0.5">
-              AUTONOMOUS TWIN
+              ACTIVE RUNTIME
             </span>
             <span className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-white block">
-              WELLSPRING
+              FLUX KERNEL 2.4
             </span>
             <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-white/80 uppercase block mt-0.5">
-              BOTTLENECK ANALYZER
+              STOCHASTIC NETWORK EQUILIBRIUM
             </span>
             <span className="text-[8px] sm:text-[9px] tracking-[0.3em] text-emerald-300 uppercase block mt-1 font-mono">
-              ERLANG-C • CO2e • WHAT-IF
+              14MS MESH • CONTINUOUS DISPATCH • CLOSED LOOP
             </span>
           </div>
         </div>

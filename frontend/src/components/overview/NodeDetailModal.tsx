@@ -39,13 +39,21 @@ export const NodeDetailModal: React.FC = () => {
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-stone-200/50">
               <div className="flex items-center gap-2">
-                <span className="px-3 py-1 text-[10px] font-mono font-semibold uppercase rounded-full bg-stone-100 text-stone-700 border border-stone-200">
-                  {node.type.toUpperCase()} FACILITY
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-stone-100/80 text-stone-700 border border-stone-200/60">
+                  {node.type === 'source'
+                    ? 'Collection Source'
+                    : node.type === 'transfer'
+                    ? 'Transfer Station'
+                    : node.type === 'sorting'
+                    ? 'Sorting Facility'
+                    : node.type === 'processing'
+                    ? 'Processing Facility'
+                    : 'Disposal Sink'}
                 </span>
                 {node.pulseRed && (
-                  <span className="px-3 py-1 text-[10px] font-mono font-semibold uppercase rounded-full bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1 shadow-xs">
-                    <AlertTriangle className="w-3 h-3 text-rose-600" />
-                    BOTTLENECK ACTIVE
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    Bottleneck Detected
                   </span>
                 )}
               </div>
@@ -63,7 +71,7 @@ export const NodeDetailModal: React.FC = () => {
               <h3 className="text-xl font-sans font-bold text-stone-900 tracking-tight">
                 {node.name}
               </h3>
-              <p className="mt-1 text-xs text-stone-500 leading-relaxed">
+              <p className="mt-1 text-xs text-stone-500 leading-relaxed font-normal">
                 {node.description}
               </p>
             </div>
@@ -71,21 +79,21 @@ export const NodeDetailModal: React.FC = () => {
             {/* Erlang C Live Queue Theory Diagnostic */}
             <div className="mt-6 p-5 rounded-2xl bg-white/60 border border-white/80 shadow-xs">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-mono font-bold text-stone-800 uppercase flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-emerald-700" /> Erlang-C Queueing Telemetry
+                <span className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-700" /> Erlang-C Queue Telemetry
                 </span>
-                <span className="text-[10px] font-mono text-stone-500 font-medium">
+                <span className="text-[11px] font-medium text-stone-500">
                   M/M/{node.activeBays} Model
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+              <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
-                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
-                    Traffic Intensity (ρ)
+                  <span className="text-xs text-stone-500 font-normal block mb-1">
+                    Traffic Intensity
                   </span>
                   <span
-                    className={`text-xl font-bold ${
+                    className={`text-3xl font-semibold tracking-tight tabular-nums ${
                       q.severity === 'critical'
                         ? 'text-rose-600'
                         : q.severity === 'warning'
@@ -95,47 +103,47 @@ export const NodeDetailModal: React.FC = () => {
                   >
                     {Math.round(q.utilization * 100)}%
                   </span>
-                  <span className="text-[10px] text-stone-500 block mt-0.5">
+                  <span className="text-xs text-stone-500 font-normal block mt-1">
                     {q.severity === 'critical' ? 'Capacity Exceeded' : 'Flow Balanced'}
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
-                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
-                    Wait Probability P(W&gt;0)
+                  <span className="text-xs text-stone-500 font-normal block mb-1">
+                    Wait Probability
                   </span>
-                  <span className="text-xl font-bold text-stone-900">
+                  <span className="text-3xl font-semibold tracking-tight tabular-nums text-stone-900">
                     {Math.round(q.probWait * 100)}%
                   </span>
-                  <span className="text-[10px] text-stone-500 block mt-0.5">
-                    Erlang-C Delay Chance
+                  <span className="text-xs text-stone-500 font-normal block mt-1">
+                    Delay Probability
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
-                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
-                    Queue Length (Lq)
+                  <span className="text-xs text-stone-500 font-normal block mb-1">
+                    Queue Length
                   </span>
-                  <span className="text-xl font-bold text-sky-800">
+                  <span className="text-3xl font-semibold tracking-tight tabular-nums text-sky-800">
                     {Math.round(q.queueLength * 10) / 10} trucks
                   </span>
-                  <span className="text-[10px] text-stone-500 block mt-0.5">
+                  <span className="text-xs text-stone-500 font-normal block mt-1">
                     Staged at Inbound Gates
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
-                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
-                    Avg Queue Delay (Wq)
+                  <span className="text-xs text-stone-500 font-normal block mb-1">
+                    Average Delay
                   </span>
                   <span
-                    className={`text-xl font-bold ${
+                    className={`text-3xl font-semibold tracking-tight tabular-nums ${
                       q.avgWaitMinutes > 15 ? 'text-rose-600' : 'text-emerald-700'
                     }`}
                   >
                     {Math.round(q.avgWaitMinutes * 10) / 10} mins
                   </span>
-                  <span className="text-[10px] text-stone-500 block mt-0.5">
+                  <span className="text-xs text-stone-500 font-normal block mt-1">
                     Total in system: {Math.round(q.totalSystemTimeMinutes)}m
                   </span>
                 </div>
@@ -144,7 +152,7 @@ export const NodeDetailModal: React.FC = () => {
 
             {/* Interactive Capacity Controls */}
             <div className="mt-5 space-y-3">
-              <h4 className="text-xs font-mono uppercase tracking-wider font-semibold text-stone-500">
+              <h4 className="text-xs font-semibold text-stone-700">
                 Dynamic Capacity Controls
               </h4>
 
@@ -154,7 +162,7 @@ export const NodeDetailModal: React.FC = () => {
                   <div className="text-xs font-semibold text-stone-900">
                     Active Service Bays (c)
                   </div>
-                  <div className="text-[11px] text-stone-500 font-mono">
+                  <div className="text-xs text-stone-500 font-normal">
                     Service rate: {node.serviceRate} trucks/bay/hr
                   </div>
                 </div>
@@ -167,7 +175,7 @@ export const NodeDetailModal: React.FC = () => {
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="font-mono font-bold text-stone-900 w-6 text-center text-sm">
+                  <span className="font-semibold text-stone-900 w-6 text-center text-sm tabular-nums">
                     {node.activeBays}
                   </span>
                   <button
@@ -185,7 +193,7 @@ export const NodeDetailModal: React.FC = () => {
                   <div className="text-xs font-semibold text-stone-900">
                     Inflow Arrival Rate (λ)
                   </div>
-                  <div className="text-[11px] text-stone-500 font-mono">
+                  <div className="text-xs text-stone-500 font-normal">
                     {node.arrivalRate} trucks/hr ({Math.round(node.arrivalRate * 7.5)} MT/hr)
                   </div>
                 </div>
@@ -197,7 +205,7 @@ export const NodeDetailModal: React.FC = () => {
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="font-mono font-bold text-stone-900 w-8 text-center text-sm">
+                  <span className="font-semibold text-stone-900 w-8 text-center text-sm tabular-nums">
                     {node.arrivalRate}
                   </span>
                   <button
@@ -212,14 +220,14 @@ export const NodeDetailModal: React.FC = () => {
 
             {/* Accepted Waste Streams */}
             <div className="mt-5">
-              <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-stone-500 block mb-2">
+              <span className="text-xs font-semibold text-stone-700 block mb-2">
                 Processed Waste Streams
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {node.wasteTypes.map((wt, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 rounded-full bg-white/80 text-stone-700 text-xs border border-white/80 font-mono font-medium shadow-xs"
+                    className="px-3 py-1 rounded-full text-xs font-medium bg-white/80 text-stone-600 border border-stone-200/80 shadow-sm hover:border-stone-300 transition"
                   >
                     {wt}
                   </span>
@@ -244,7 +252,7 @@ export const NodeDetailModal: React.FC = () => {
 
             <button
               onClick={() => setSelectedNodeId(null)}
-              className="w-full py-2.5 px-4 rounded-full bg-white/80 hover:bg-white text-stone-700 text-xs font-mono font-medium transition border border-stone-200/60 shadow-xs"
+              className="w-full py-2.5 px-4 rounded-full bg-white/80 hover:bg-white text-stone-700 text-xs font-medium transition border border-stone-200/60 shadow-xs"
             >
               Close Inspector
             </button>

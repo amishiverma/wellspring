@@ -41,6 +41,11 @@ interface SimState {
   applyPresetScenario: (presetKey: 'baseline' | 'surge' | 'mitigated' | 'netzero') => void;
   triggerAIOptimizer: () => void;
   tickTelemetry: () => void;
+  fetchAISummaryFromBackend: (
+    bottleneckData: Record<string, unknown>,
+    suggestions: Record<string, unknown>[],
+    apiKey?: string
+  ) => Promise<void>;
 }
 
 export const useSimStore = create<SimState>((set, get) => ({
@@ -218,5 +223,44 @@ export const useSimStore = create<SimState>((set, get) => ({
         packetLogs: [newPacket, ...state.packetLogs.slice(0, 15)]
       };
     });
-  }
+  },
+
+  fetchAISummaryFromBackend: async (bottleneckData, suggestions, apiKey) => {
+    set({ isOptimizing: true });
+    try {
+      const res = await fetch('http://localhost:8000/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bottleneck_data: bottleneckData,
+          suggestions,
+          api_key: apiKey ?? null,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(err?.detail ?? err?.message ?? `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const summaryText: string = data?.summary ?? '';
+
+      // Parse bullet points from the LLM response.
+      // Each bullet starts with '•', '-', or a digit+period.
+      const bullets = summaryText
+        .split('\n')
+        .map((l: string) => l.trim())
+        .filter((l: string) => l.length > 0 && /^[•\-\d]/.test(l));
+
+      set({
+        isOptimizing: false,
+        aiPlannerBullets: bullets.length > 0 ? bullets : [summaryText],
+        activeScenarioName: 'AI Executive Summary (Live)',
+      });
+    } catch (err: any) {
+      console.error('[simStore] fetchAISummaryFromBackend failed:', err);
+      set({ isOptimizing: false });
+    }
+  },
 }));

@@ -98,11 +98,18 @@ def erlang_c_formula(arrival_rate: float, service_rate: float, num_servers: int)
     # Iterative sum  Σ_{k=0}^{c-1} A^k / k!
     # Each iteration: term_k = A^k / k!  built from term_{k-1} * A / k
     # Avoids math.factorial() — safe for c up to tens of thousands.
+    # An OverflowError or inf term signals extreme saturation → return 1.0.
     sum_terms = 0.0
     term = 1.0           # k = 0:  A^0 / 0! = 1
-    for k in range(c):
-        sum_terms += term
-        term *= A / (k + 1)   # term becomes A^{k+1} / (k+1)!
+    try:
+        for k in range(c):
+            sum_terms += term
+            term *= A / (k + 1)   # term becomes A^{k+1} / (k+1)!
+            if math.isinf(term):
+                # Term blew up — system is deeply saturated
+                return 1.0
+    except OverflowError:
+        return 1.0
 
     # After the loop, term = A^c / c!  (the k = c term, not added to sum)
     # Numerator of Erlang C:  A^c / (c! · (1 − ρ))

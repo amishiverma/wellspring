@@ -31,6 +31,8 @@ from typing import Any
 from queuing import analyze_all_nodes, get_bottleneck_nodes
 from graph_analyzer import analyze_network_capacity
 from simpy_engine import run_time_series_simulation
+from co2_calculator import calculate_environmental_kpis
+from optimizer import generate_suggestions
 
 logger = logging.getLogger(__name__)
 
@@ -279,18 +281,69 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
     logger.info("[Step 2] Done in %.3f s — max_flow=%.2f tons/hr",
                 t2_done, graph_result.get("max_flow", 0.0))
 
-    # ── Step 3: SimPy Discrete-Event Time-Series Simulation ───────────────────
-    logger.info("[Step 3] Running SimPy simulation for %d hours ...", sim_time_hours)
+    # ── Step 3: CO2 / Environmental KPI Calculation ──────────────────────────
+    logger.info("[Step 3] Calculating environmental KPIs ...")
     t3 = time.perf_counter()
-    time_series = _safe_time_series(nodes, edges, sim_time_hours)
+    # flow_dict from graph solver: maps edge/node id -> flow in tons/hr
+    flow_dict: dict = graph_result.get("flow_dict", {})
+    # Flatten nested flow_dict (u -> {v -> flow}) to edge-key form if needed
+    flat_flow: dict = {}
+    for u, targets in flow_dict.items():
+        if isinstance(targets, dict):
+            for v, f in targets.items():
+                flat_flow[f"{u}->{v}"] = f
+        else:
+            flat_flow[u] = targets
+    try:
+        env_metrics = calculate_environmental_kpis(nodes, edges, flat_flow)
+    except Exception as exc:
+        logger.error("co2_calculator.calculate_environmental_kpis failed: %s", exc)
+        errors.append(f"environmental_metrics: {exc}")
+        env_metrics = {
+            "total_co2_kg_per_hour": 0.0,
+            "total_fuel_liters_per_hour": 0.0,
+            "landfill_diversion_rate": 0.0,
+            "edge_breakdown": [],
+            "node_breakdown": [],
+            "summary": {},
+        }
     t3_done = time.perf_counter() - t3
+    logger.info("[Step 3] Done in %.3f s — total_co2=%.2f kg/hr",
+                t3_done, env_metrics.get("total_co2_kg_per_hour", 0.0))
+
+    # ── Step 4: Optimizer Suggestions ────────────────────────────────────────
+    logger.info("[Step 4] Generating optimizer suggestions ...")
+    t4 = time.perf_counter()
+    # Build node_metrics map in the shape optimizer.generate_suggestions expects:
+    # {node_id: {"utilization": float, ...}}
+    node_metrics_map: dict = {
+        m["node_id"]: m for m in all_metrics
+    }
+    try:
+        optimizer_suggestions = generate_suggestions(
+            nodes=nodes,
+            bottleneck_results={"node_metrics": node_metrics_map},
+        )
+    except Exception as exc:
+        logger.error("optimizer.generate_suggestions failed: %s", exc)
+        errors.append(f"optimizer_suggestions: {exc}")
+        optimizer_suggestions = []
+    t4_done = time.perf_counter() - t4
+    logger.info("[Step 4] Done in %.3f s — %d suggestion(s) generated",
+                t4_done, len(optimizer_suggestions))
+
+    # ── Step 5: SimPy Discrete-Event Time-Series Simulation ───────────────────
+    logger.info("[Step 5] Running SimPy simulation for %d hours ...", sim_time_hours)
+    t5 = time.perf_counter()
+    time_series = _safe_time_series(nodes, edges, sim_time_hours)
+    t5_done = time.perf_counter() - t5
     if time_series and "error" in time_series[0]:
         errors.append(f"time_series: {time_series[0]['error']}")
         time_series = []
-    logger.info("[Step 3] Done in %.3f s — %d snapshots generated",
-                t3_done, len(time_series))
+    logger.info("[Step 5] Done in %.3f s — %d snapshots generated",
+                t5_done, len(time_series))
 
-    # ── Step 4: Package the output ────────────────────────────────────────────
+    # ── Step 6: Package the output ────────────────────────────────────────────
     wall_done = time.perf_counter() - wall_start
 
     return {
@@ -301,6 +354,8 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
             "total_bottlenecks": len(bottleneck_nodes),
         },
         "graph_metrics": graph_result,
+        "environmental_metrics": env_metrics,
+        "optimizer_suggestions": list(optimizer_suggestions),
         "time_series": time_series,
         "meta": {
             "sim_time_hours": sim_time_hours,

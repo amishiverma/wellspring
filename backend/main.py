@@ -31,6 +31,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from api.routes.simulate import router as simulate_router
+from api.routes.explain import router as explain_router
 from models.database import create_db_and_tables
 
 
@@ -187,6 +188,5 @@ async def root() -> dict:
 # Phase 3 — simulate router is live
 app.include_router(simulate_router, prefix="/api")
 
-# Phase 4 stubs (uncomment when Yash's explain route is ready)
-# from api.routes import explain
-# app.include_router(explain.router, prefix="/api")
+# Phase 4 — explain router is live
+app.include_router(explain_router, prefix="/api")

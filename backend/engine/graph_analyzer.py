@@ -16,82 +16,126 @@ from __future__ import annotations
 
 from typing import Any
 
+import math
+
 import networkx as nx
 
 
 def build_graph(nodes: list[dict[str, Any]], edges: list[dict[str, Any]]) -> nx.DiGraph:
     """
     Build a directed graph from node and edge dictionaries.
-    
+
+    Node-Splitting for Correct Capacity Enforcement
+    ------------------------------------------------
+    NetworkX's maximum_flow algorithm only respects capacities on *edges*.
+    Node processing capacities are enforced by splitting every node ``V``
+    into two nodes:
+
+        V_in  --[capacity = node_processing_capacity]--> V_out
+
+    All incoming real edges are redirected to ``V_in``.
+    All outgoing real edges originate from ``V_out``.
+
+    This correctly models facility throughput limits inside the max-flow
+    computation — previously these limits were silently ignored.
+
+    Source/sink nodes (residential, source) have infinite internal capacity
+    so they never become artificial bottlenecks in the solver.
+
     Args:
         nodes: List of node dicts with keys:
             - id (str): Unique node identifier
-            - type (str): Node type ('residential', 'transfer', 'mrf', 'landfill', 'recycling')
-            - arrival_rate_tons_hr (float): Waste generation/arrival rate (for source nodes)
-            - service_rate_per_server (float): Processing rate per server
+            - type (str): 'residential' | 'transfer' | 'mrf' | 'landfill' | 'recycling'
+            - arrival_rate_tons_hr (float): Waste generation/arrival rate
+            - service_rate_per_server (float): Processing rate per server (tons/hr)
             - num_servers (int): Number of parallel servers
         edges: List of edge dicts with keys:
-            - source (str): Source node ID
-            - target (str): Target node ID
-            - distance_km (float): Distance in kilometers
-            - num_trucks (int): Number of trucks on this route
-            - truck_capacity_tons (float): Capacity per truck in tons
-            - trips_per_hour (float): Trips per hour per truck
-    
+            - source (str): Source node ID (original, before splitting)
+            - target (str): Target node ID (original, before splitting)
+            - num_trucks (int), truck_capacity_tons (float), trips_per_hour (float)
+
     Returns:
-        nx.DiGraph with nodes and edges. Edge capacity = num_trucks * truck_capacity_tons * trips_per_hour.
-        Node attributes include processing capacity = num_servers * service_rate_per_server.
+        nx.DiGraph with split nodes.  Edge capacity = num_trucks * truck_capacity_tons
+        * trips_per_hour.  Internal split edges carry the node's processing capacity.
     """
     G = nx.DiGraph()
-    
-    # Add nodes with attributes
+
+    # Source/sink node types have infinite processing capacity — they must never
+    # become an artificial bottleneck in the solver.
+    _INFINITE_CAPACITY_TYPES = {"residential", "source"}
+
+    # ── Step 1: add split nodes ───────────────────────────────────────────────
     for node in nodes:
         node_id = node.get("id")
         if not node_id:
             continue
-        
-        # Calculate node processing capacity
+
+        node_type = node.get("type", "unknown")
         service_rate = float(node.get("service_rate_per_server", 0.0))
-        num_servers = int(node.get("num_servers", 0))
+        num_servers  = int(node.get("num_servers", 0))
         node_capacity = service_rate * num_servers
-        
-        G.add_node(
-            node_id,
-            type=node.get("type", "unknown"),
-            arrival_rate=float(node.get("arrival_rate_tons_hr", 0.0)),
-            service_rate=service_rate,
-            num_servers=num_servers,
-            capacity=node_capacity,
-            **{k: v for k, v in node.items() if k not in ["id", "type", "arrival_rate_tons_hr", "service_rate_per_server", "num_servers"]}
-        )
-    
-    # Add edges with capacity
+
+        in_node  = node_id + "_in"
+        out_node = node_id + "_out"
+
+        # Internal edge capacity = node processing capacity
+        # (inf for source/sink types so they never form the bottleneck)
+        if node_type in _INFINITE_CAPACITY_TYPES or node_capacity <= 0:
+            internal_cap = float("inf")
+        else:
+            internal_cap = node_capacity
+
+        common_attrs = {
+            "original_id": node_id,
+            "type": node_type,
+            "arrival_rate": float(node.get("arrival_rate_tons_hr", 0.0)),
+            "service_rate": service_rate,
+            "num_servers": num_servers,
+        }
+        G.add_node(in_node,  **common_attrs, split_role="in")
+        G.add_node(out_node, **common_attrs, split_role="out")
+
+        # The internal constraint edge — this is what max-flow now respects
+        G.add_edge(in_node, out_node, capacity=internal_cap, is_internal=True)
+
+    # ── Step 2: add real transport edges ─────────────────────────────────────
     for edge in edges:
         source = edge.get("source")
         target = edge.get("target")
         if not source or not target:
             continue
-        
-        # Edge capacity = num_trucks * truck_capacity_tons * trips_per_hour
-        num_trucks = int(edge.get("num_trucks", 0))
+
+        num_trucks    = int(edge.get("num_trucks", 0))
         truck_capacity = float(edge.get("truck_capacity_tons", 0.0))
         trips_per_hour = float(edge.get("trips_per_hour", 0.0))
-        
-        capacity = num_trucks * truck_capacity * trips_per_hour
-        distance = float(edge.get("distance_km", 0.0))
-        
+        capacity  = num_trucks * truck_capacity * trips_per_hour
+        distance  = float(edge.get("distance_km", 0.0))
+
+        extra = {k: v for k, v in edge.items()
+                 if k not in {"source", "target", "distance_km",
+                              "num_trucks", "truck_capacity_tons", "trips_per_hour"}}
+
+        # Real edges go from source_out → target_in
         G.add_edge(
-            source,
-            target,
+            source + "_out",
+            target + "_in",
             capacity=capacity,
             distance_km=distance,
             num_trucks=num_trucks,
             truck_capacity_tons=truck_capacity,
             trips_per_hour=trips_per_hour,
-            **{k: v for k, v in edge.items() if k not in ["source", "target", "distance_km", "num_trucks", "truck_capacity_tons", "trips_per_hour"]}
+            is_internal=False,
+            **extra,
         )
-    
+
     return G
+
+
+def _resolve_original_id(node_id: str) -> str:
+    """Strip the '_in' / '_out' suffix added by the node-splitting pass."""
+    if node_id.endswith("_in") or node_id.endswith("_out"):
+        return node_id.rsplit("_", 1)[0]
+    return node_id
 
 
 def find_network_bottlenecks(
@@ -102,72 +146,14 @@ def find_network_bottlenecks(
     """
     Find network-wide bottlenecks using the Max-Flow / Min-Cut theorem.
 
-    Algorithm Overview
-    ------------------
-    This function implements the classic Max-Flow / Min-Cut analysis on the
-    directed waste-flow graph using NetworkX's Edmonds-Karp algorithm
-    (a BFS-based implementation of Ford-Fulkerson with polynomial time
-    guarantee O(V · E^2)).
+    Works on a *split-node* graph produced by build_graph().
+    Super-source connects to every source ``node_in``.
+    Super-sink is fed by every sink ``node_out``.
+    Min-cut edges that are internal split edges encode node capacity constraints;
+    transport edges encode route capacity constraints — both are correctly captured.
 
-    Mathematical Foundation
-    -----------------------
-    Max-Flow Min-Cut Theorem (Ford & Fulkerson, 1956):
-        In any flow network, the maximum value of flow from source s to sink t
-        equals the minimum capacity over all s-t cuts:
-
-            max_flow(s, t) = min_cut_capacity(s, t)
-
-        A cut (S, T) partitions nodes into two sets where s ∈ S and t ∈ T.
-        The cut capacity = Σ capacity(u → v) for all edges u ∈ S, v ∈ T.
-        Edges in the minimum-capacity cut are the binding bottlenecks.
-
-    Super-Source / Super-Sink Construction
-    ----------------------------------------
-    Because the waste network has multiple residential sources and multiple
-    terminal sinks, we add virtual nodes:
-
-        super_source  →  (∞ capacity)  →  each residential / source node
-        each landfill / recycling node →  (node capacity)  →  super_sink
-
-    This reduces the multi-source, multi-sink problem to a standard single-pair
-    max-flow problem solvable by Edmonds-Karp.
-
-    Edge Capacity Formula
-    ---------------------
-        capacity (tons/hr) = num_trucks × truck_capacity_tons × trips_per_hour
-
-    Error Resilience
-    ----------------
-    Both nx.maximum_flow() and nx.minimum_cut() are wrapped in
-    try/except nx.NetworkXError blocks. If the graph is disconnected
-    (e.g. a node has no edges, or the super-source can't reach the super-sink),
-    the functions return safe fallback values (max_flow=0, empty lists)
-    instead of crashing the API.
-
-    Parameters
-    ----------
-    G : nx.DiGraph
-        Directed graph from build_graph(). Edge attribute 'capacity' (tons/hr)
-        must be present on every edge — NetworkX requires this exact key.
-    source_nodes : list[str]
-        Node IDs for waste sources (residential zones, collection points).
-    sink_nodes : list[str]
-        Node IDs for waste terminals (landfills, recycling centres).
-
-    Returns
-    -------
-    dict with:
-        max_flow_value   (float)       — city-wide theoretical max throughput (tons/hr)
-        min_cut_edges    (list[dict])  — edges whose removal would reduce max flow
-                                         (the true system bottlenecks)
-        min_cut_capacity (float)       — capacity of the minimum cut (= max_flow)
-        flow_dict        (dict)        — full edge-level flow distribution
-        saturated_edges  (list[dict])  — edges at >= 99% utilisation
-        utilization_by_edge (dict)     — per-edge {flow, capacity, utilization}
-
-    Safe Fallback (returned on nx.NetworkXError)
-    ---------------------------------------------
-        max_flow_value = 0.0, all lists/dicts empty, no exception raised.
+    Parameters / Returns: same contract as before, with virtual _in/_out
+    suffixes stripped from all returned node IDs.
     """
     if not G.nodes():
         return {
@@ -178,38 +164,35 @@ def find_network_bottlenecks(
             "saturated_edges": [],
             "utilization_by_edge": {},
         }
-    
-    # Create a working copy to add super-source and super-sink
+
     H = G.copy()
     super_source = "__SUPER_SOURCE__"
-    super_sink = "__SUPER_SINK__"
-    
-    # Add super-source connected to all source nodes with infinite capacity
-    # (or capacity equal to node's arrival rate)
+    super_sink   = "__SUPER_SINK__"
+
+    # Super-source → each source node's _in with capacity = arrival rate
     for src in source_nodes:
-        if src in H:
-            # Capacity from super-source = node's arrival rate (waste generation)
-            arrival_rate = H.nodes[src].get("arrival_rate", float('inf'))
-            H.add_edge(super_source, src, capacity=arrival_rate)
-    
-    # Add super-sink connected from all sink nodes with infinite capacity
+        in_node = src + "_in"
+        if in_node in H:
+            arrival_rate = H.nodes[in_node].get("arrival_rate", float("inf"))
+            H.add_edge(super_source, in_node, capacity=arrival_rate)
+
+    # Each sink node's _out → super-sink with infinite capacity
+    # (the real capacity limit is already encoded in the internal split edge)
     for snk in sink_nodes:
-        if snk in H:
-            # Capacity to super-sink = node's processing capacity
-            node_capacity = H.nodes[snk].get("capacity", float('inf'))
-            H.add_edge(snk, super_sink, capacity=node_capacity)
-    
-    # Compute maximum flow
+        out_node = snk + "_out"
+        if out_node in H:
+            H.add_edge(out_node, super_sink, capacity=float("inf"))
+
+    # ── Max-flow (Edmonds-Karp) ───────────────────────────────────────────────
     try:
         flow_value, flow_dict = nx.maximum_flow(
             H, super_source, super_sink, capacity="capacity"
         )
     except nx.NetworkXError:
-        # Graph might be disconnected
         flow_value = 0.0
-        flow_dict = {}
-    
-    # Compute minimum cut
+        flow_dict  = {}
+
+    # ── Minimum cut ───────────────────────────────────────────────────────────
     try:
         cut_value, partition = nx.minimum_cut(
             H, super_source, super_sink, capacity="capacity"
@@ -218,76 +201,122 @@ def find_network_bottlenecks(
     except nx.NetworkXError:
         cut_value = 0.0
         reachable, non_reachable = set(), set()
-    
-    # Identify edges crossing the cut (the bottlenecks)
-    min_cut_edges = []
+
+    # ── Build min-cut edge list, resolving split-node IDs back to originals ───
+    min_cut_edges: list[dict] = []
     for u in reachable:
         for v in non_reachable:
-            if H.has_edge(u, v):
-                edge_data = H[u][v]
-                min_cut_edges.append({
-                    "source": u,
-                    "target": v,
-                    "capacity": edge_data.get("capacity", 0),
-                    "flow": flow_dict.get(u, {}).get(v, 0),
-                    "distance_km": edge_data.get("distance_km", 0),
-                    "is_transport_edge": u != super_source and v != super_sink,
-                })
-    
-    # Find saturated edges in the original graph (flow == capacity)
-    saturated_edges = []
-    utilization_by_edge = {}
-    
-    for u, v, data in G.edges(data=True):
-        flow = flow_dict.get(u, {}).get(v, 0)
-        capacity = data.get("capacity", 0)
-        utilization = flow / capacity if capacity > 0 else 0.0
-        
-        utilization_by_edge[f"{u}->{v}"] = {
-            "utilization": round(utilization, 4),
-            "flow": round(flow, 2),
-            "capacity": round(capacity, 2),
-        }
-        
-        if capacity > 0 and utilization >= 0.99:  # Essentially saturated
-            saturated_edges.append({
-                "source": u,
-                "target": v,
-                "capacity": round(capacity, 2),
-                "flow": round(flow, 2),
-                "utilization": round(utilization, 4),
-                "distance_km": data.get("distance_km", 0),
+            if not H.has_edge(u, v):
+                continue
+            edge_data = H[u][v]
+            orig_u = _resolve_original_id(u)
+            orig_v = _resolve_original_id(v)
+            is_internal = edge_data.get("is_internal", False)
+            # An internal edge in the cut represents a node capacity bottleneck
+            is_transport = (
+                u != super_source
+                and v != super_sink
+                and not is_internal
+            )
+            min_cut_edges.append({
+                "source": orig_u,
+                "target": orig_v,
+                "capacity": edge_data.get("capacity", 0),
+                "flow": flow_dict.get(u, {}).get(v, 0),
+                "distance_km": edge_data.get("distance_km", 0),
+                "is_transport_edge": is_transport,
+                "is_node_capacity_constraint": is_internal,
             })
-    
+
+    # ── Per-edge utilization on the ORIGINAL (non-augmented) transport edges ──
+    # We walk real transport edges (is_internal=False) on the original graph.
+    saturated_edges: list[dict] = []
+    utilization_by_edge: dict = {}
+
+    for u, v, data in G.edges(data=True):
+        if data.get("is_internal", False):
+            # Internal split edge: report under original node ID
+            orig_id = _resolve_original_id(u)   # u is the _in node
+            flow = flow_dict.get(u, {}).get(v, 0)
+            capacity = data.get("capacity", 0)
+            utilization = flow / capacity if capacity > 0 and not math.isinf(capacity) else 0.0
+            utilization_by_edge[f"{orig_id}[node_cap]"] = {
+                "utilization": round(utilization, 4),
+                "flow": round(flow, 2),
+                "capacity": round(capacity, 2),
+            }
+            if capacity > 0 and not math.isinf(capacity) and utilization >= 0.99:
+                saturated_edges.append({
+                    "source": orig_id,
+                    "target": orig_id,
+                    "capacity": round(capacity, 2),
+                    "flow": round(flow, 2),
+                    "utilization": round(utilization, 4),
+                    "is_node_capacity_constraint": True,
+                })
+        else:
+            orig_u = _resolve_original_id(u)
+            orig_v = _resolve_original_id(v)
+            flow = flow_dict.get(u, {}).get(v, 0)
+            capacity = data.get("capacity", 0)
+            utilization = flow / capacity if capacity > 0 else 0.0
+            key = f"{orig_u}->{orig_v}"
+            utilization_by_edge[key] = {
+                "utilization": round(utilization, 4),
+                "flow": round(flow, 2),
+                "capacity": round(capacity, 2),
+            }
+            if capacity > 0 and utilization >= 0.99:
+                saturated_edges.append({
+                    "source": orig_u,
+                    "target": orig_v,
+                    "capacity": round(capacity, 2),
+                    "flow": round(flow, 2),
+                    "utilization": round(utilization, 4),
+                    "distance_km": data.get("distance_km", 0),
+                    "is_node_capacity_constraint": False,
+                })
+
+    # Build a clean flow_dict keyed by original IDs for downstream consumers
+    clean_flow: dict = {}
+    for u, targets in flow_dict.items():
+        orig_u = _resolve_original_id(u)
+        if orig_u not in clean_flow:
+            clean_flow[orig_u] = {}
+        for v, f in targets.items():
+            orig_v = _resolve_original_id(v)
+            clean_flow[orig_u][orig_v] = round(
+                clean_flow[orig_u].get(orig_v, 0) + f, 2
+            )
+
     return {
         "max_flow_value": round(flow_value, 2),
         "min_cut_capacity": round(cut_value, 2),
         "min_cut_edges": min_cut_edges,
-        "flow_dict": {u: {v: round(f, 2) for v, f in targets.items()} for u, targets in flow_dict.items()},
+        "flow_dict": clean_flow,
         "saturated_edges": saturated_edges,
         "utilization_by_edge": utilization_by_edge,
-        "num_source_nodes": len([s for s in source_nodes if s in G]),
-        "num_sink_nodes": len([t for t in sink_nodes if t in G]),
+        "num_source_nodes": len([s for s in source_nodes if s + "_in" in G]),
+        "num_sink_nodes": len([t for t in sink_nodes if t + "_out" in G]),
     }
 
 
 def get_edge_utilization(G: nx.DiGraph, flow_dict: dict) -> dict[str, dict]:
     """
-    Calculate utilization for all edges given a flow dictionary.
-    
-    Args:
-        G: Original graph (without super-source/sink)
-        flow_dict: Flow dictionary from nx.maximum_flow
-    
-    Returns:
-        Dict mapping "u->v" to utilization info.
+    Calculate utilization for all non-internal transport edges given a flow dictionary.
+    Internal split edges (is_internal=True) are excluded; they are reported by
+    find_network_bottlenecks under the node-capacity key.
     """
     utilization = {}
     for u, v, data in G.edges(data=True):
+        if data.get("is_internal", False):
+            continue
+        orig_u = _resolve_original_id(u)
+        orig_v = _resolve_original_id(v)
         flow = flow_dict.get(u, {}).get(v, 0)
         capacity = data.get("capacity", 0)
         util = flow / capacity if capacity > 0 else 0.0
-        utilization[f"{u}->{v}"] = {
+        utilization[f"{orig_u}->{orig_v}"] = {
             "utilization": round(util, 4),
             "flow": round(flow, 2),
             "capacity": round(capacity, 2),
@@ -456,10 +485,7 @@ def analyze_network_capacity(
     # 1. Build the directed graph
     G = build_graph(nodes, edges)
 
-    # 2. Determine sources and sinks
-    #    We respect the explicit single source/sink the caller passed, but also
-    #    support all nodes of matching type so the super-source / super-sink
-    #    logic inside find_network_bottlenecks works correctly.
+    # 2. Determine sources and sinks (use original IDs; build_graph creates _in/_out internally)
     all_source_ids = [
         n["id"] for n in nodes
         if n.get("type") in ("residential", "source") or n["id"] == source_node_id
@@ -469,22 +495,30 @@ def analyze_network_capacity(
         if n.get("type") in ("landfill", "recycling") or n["id"] == sink_node_id
     ]
 
-    # Fall back to the explicit ids if auto-detection yields nothing
     if not all_source_ids:
         all_source_ids = [source_node_id]
     if not all_sink_ids:
         all_sink_ids = [sink_node_id]
 
-    # 3. Max-flow / min-cut
+    # 3. Max-flow / min-cut on the split-node graph
     flow_result = find_network_bottlenecks(G, all_source_ids, all_sink_ids)
 
-    # 4. Betweenness centrality (weight = inverse capacity → higher cap = shorter path)
-    #    nx.betweenness_centrality uses 'weight' as the path cost; we want
-    #    high-capacity edges to be preferred, so we set weight=None (unweighted)
-    #    for simplicity and speed — a waste network is rarely large enough to need
-    #    weighted centrality.
-    centrality: dict[str, float] = nx.betweenness_centrality(G, normalized=True)
-    centrality_rounded = {node_id: round(score, 6) for node_id, score in centrality.items()}
+    # 4. Betweenness centrality on original node IDs only (collapse _in/_out)
+    #    Build a simplified view: one node per original ID, edges between originals.
+    G_orig = nx.DiGraph()
+    for u, v, data in G.edges(data=True):
+        if data.get("is_internal", False):
+            continue
+        orig_u = _resolve_original_id(u)
+        orig_v = _resolve_original_id(v)
+        cap = data.get("capacity", 0)
+        if G_orig.has_edge(orig_u, orig_v):
+            G_orig[orig_u][orig_v]["capacity"] += cap
+        else:
+            G_orig.add_edge(orig_u, orig_v, capacity=cap)
+
+    centrality: dict[str, float] = nx.betweenness_centrality(G_orig, normalized=True)
+    centrality_rounded = {nid: round(score, 6) for nid, score in centrality.items()}
 
     return {
         "max_flow": flow_result["max_flow_value"],

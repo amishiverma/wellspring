@@ -7,6 +7,16 @@ Purpose : Single source of truth for all data contracts between frontend,
           backend API, and simulation engine.
 
 Requires: pydantic >= 2.0
+
+Key Changes (Bug-Fix Pass)
+--------------------------
+- Added alias_generator = to_camel on all models so camelCase JSON from the
+  frontend maps correctly to snake_case Python fields (prevents 422 errors).
+- Added all frontend-expected queuing fields to WasteNode: arrival_rate,
+  service_rate, active_bays, queue_length, avg_wait_minutes, bottleneck_status,
+  pulse_red.
+- Replaced coordinates: list[float] with position: dict {"x": float, "y": float}
+  to match the frontend's WasteNode.position requirement.
 """
 
 from __future__ import annotations
@@ -15,6 +25,7 @@ from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, computed_field
+from pydantic.alias_generators import to_camel
 
 
 # ---------------------------------------------------------------------------
@@ -54,10 +65,25 @@ class WasteNode(BaseModel):
     type          : One of NodeType enum values.
     capacity      : Maximum waste the node can handle per day (tonnes/day).
     current_load  : Current waste volume being processed (tonnes/day).
-    coordinates   : [longitude, latitude] pair for map rendering.
+    position      : {"x": float, "y": float} — pixel / map coordinates for
+                    the React Flow canvas.  Replaces the old `coordinates`
+                    list to match the frontend's WasteNode.position shape.
+
+    Queuing / bottleneck fields (added for frontend contract)
+    ---------------------------------------------------------
+    arrival_rate     : λ — trucks/hour (lambda for M/M/c model).
+    service_rate     : μ — trucks/bay/hour (mu per server).
+    active_bays      : c — number of active processing bays.
+    queue_length     : Lq — mean trucks currently in queue.
+    avg_wait_minutes : Wq — mean wait before service (minutes).
+    bottleneck_status: "nominal" | "warning" | "critical".
+    pulse_red        : True when the node is a bottleneck (triggers animation).
     """
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,   # enables camelCase JSON ↔ snake_case Python
+    )
 
     id: str = Field(
         ...,
@@ -84,19 +110,52 @@ class WasteNode(BaseModel):
         ge=0,
         description="Current incoming waste load in tonnes/day",
     )
-    coordinates: list[float] = Field(
-        ...,
-        min_length=2,
-        max_length=2,
-        description="[longitude, latitude] — WGS-84 decimal degrees",
+    position: dict[str, float] = Field(
+        default_factory=lambda: {"x": 0.0, "y": 0.0},
+        description='Canvas / map position {"x": float, "y": float}',
     )
 
-    # ---- Validators -------------------------------------------------------
+    # ── Queuing / bottleneck fields (frontend contract) ─────────────────────
+
+    arrival_rate: float = Field(
+        default=0.0,
+        ge=0,
+        description="λ — truck arrival rate (trucks/hour)",
+    )
+    service_rate: float = Field(
+        default=1.0,
+        gt=0,
+        description="μ — service rate per bay (trucks/bay/hour)",
+    )
+    active_bays: int = Field(
+        default=1,
+        ge=1,
+        description="c — number of active processing bays",
+    )
+    queue_length: float = Field(
+        default=0.0,
+        ge=0,
+        description="Lq — mean trucks in queue",
+    )
+    avg_wait_minutes: float = Field(
+        default=0.0,
+        ge=0,
+        description="Wq — mean wait time before service (minutes)",
+    )
+    bottleneck_status: str = Field(
+        default="nominal",
+        description='"nominal" | "warning" | "critical"',
+    )
+    pulse_red: bool = Field(
+        default=False,
+        description="True when the node is a bottleneck — triggers Framer Motion animation",
+    )
+
+    # ── Validators ──────────────────────────────────────────────────────────
 
     @field_validator("current_load")
     @classmethod
     def load_must_not_exceed_capacity(cls, v: float, info: Any) -> float:
-        # Access sibling field safely (info.data may be partial during validation)
         capacity = info.data.get("capacity")
         if capacity is not None and v > capacity:
             raise ValueError(
@@ -104,17 +163,23 @@ class WasteNode(BaseModel):
             )
         return v
 
-    @field_validator("coordinates")
+    @field_validator("position")
     @classmethod
-    def validate_coordinates(cls, v: list[float]) -> list[float]:
-        lon, lat = v[0], v[1]
-        if not (-180.0 <= lon <= 180.0):
-            raise ValueError(f"Longitude {lon} is out of range [-180, 180]")
-        if not (-90.0 <= lat <= 90.0):
-            raise ValueError(f"Latitude {lat} is out of range [-90, 90]")
+    def validate_position(cls, v: dict[str, float]) -> dict[str, float]:
+        for key in ("x", "y"):
+            if key not in v:
+                raise ValueError(f"position must contain key '{key}'")
         return v
 
-    # ---- Computed fields --------------------------------------------------
+    @field_validator("bottleneck_status")
+    @classmethod
+    def validate_bottleneck_status(cls, v: str) -> str:
+        allowed = {"nominal", "warning", "critical"}
+        if v not in allowed:
+            raise ValueError(f"bottleneck_status must be one of {allowed}, got '{v}'")
+        return v
+
+    # ── Computed fields ─────────────────────────────────────────────────────
 
     @computed_field
     @property
@@ -153,6 +218,11 @@ class WasteEdge(BaseModel):
     vehicle_type: Dominant vehicle type on this route.
     """
 
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
+
     id: str = Field(
         ...,
         description="Unique edge identifier",
@@ -186,7 +256,7 @@ class WasteEdge(BaseModel):
         examples=["compactor_truck", "tipper_truck", "electric_van"],
     )
 
-    # ---- Validators -------------------------------------------------------
+    # ── Validators ──────────────────────────────────────────────────────────
 
     @field_validator("source", "target")
     @classmethod
@@ -195,7 +265,7 @@ class WasteEdge(BaseModel):
             raise ValueError("source and target node ids must not be empty")
         return v
 
-    # ---- Computed fields --------------------------------------------------
+    # ── Computed fields ─────────────────────────────────────────────────────
 
     @computed_field
     @property
@@ -215,6 +285,11 @@ class GlobalParameters(BaseModel):
     Simulation-wide tuning knobs consumed by Tanishq's engine and
     Yash's CO2 / optimiser modules.
     """
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     simulation_duration_days: int = Field(
         default=30,
@@ -268,6 +343,11 @@ class SimulationPayload(BaseModel):
     - Yash reads results to calculate CO2e and generate LLM summaries.
     """
 
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
+
     nodes: list[WasteNode] = Field(
         ...,
         min_length=1,
@@ -283,7 +363,7 @@ class SimulationPayload(BaseModel):
         description="Global simulation parameters",
     )
 
-    # ---- Validators -------------------------------------------------------
+    # ── Validators ──────────────────────────────────────────────────────────
 
     @field_validator("edges")
     @classmethod
@@ -303,7 +383,7 @@ class SimulationPayload(BaseModel):
                 )
         return edges
 
-    # ---- Helpers ----------------------------------------------------------
+    # ── Helpers ─────────────────────────────────────────────────────────────
 
     def bottleneck_nodes(self) -> list[WasteNode]:
         """Returns nodes where utilization >= bottleneck_threshold."""

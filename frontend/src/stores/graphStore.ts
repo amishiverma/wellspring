@@ -1,23 +1,26 @@
 import { create } from 'zustand';
 import { WasteNode, WasteEdge, IncidentAlert } from '../types';
 import { INITIAL_NODES, INITIAL_EDGES, INITIAL_ALERTS } from '../data/mockData';
-import { calculateErlangC } from '../utils/queueingMath';
+import { useSimStore } from './simStore';
 
 interface GraphState {
   nodes: WasteNode[];
   edges: WasteEdge[];
   selectedNodeId: string | null;
   alerts: IncidentAlert[];
-  
+  isBackendSyncing: boolean;
+  lastBackendError: string | null;
+
   // Actions
   setSelectedNodeId: (id: string | null) => void;
-  updateNodeArrivalRate: (nodeId: string, deltaRate: number) => void;
-  addBaysToNode: (nodeId: string, bayCountDelta: number) => void;
+  updateNodeArrivalRate: (nodeId: string, deltaRate: number) => Promise<void>;
+  addBaysToNode: (nodeId: string, bayCountDelta: number) => Promise<void>;
   setNodes: (nodes: WasteNode[]) => void;
-  mitigateBottleneck: (facilityId: string) => void;
+  mitigateBottleneck: (facilityId: string) => Promise<void>;
   dismissAlert: (alertId: string) => void;
-  rebalanceNetworkFlows: (divertPct: number) => void;
-  recalculateAllNodes: () => void;
+  rebalanceNetworkFlows: (divertPct: number) => Promise<void>;
+  recalculateAllNodes: () => Promise<void>;
+  fetchSimulationFromBackend: (isWhatIf?: boolean) => Promise<void>;
 }
 
 export const useGraphStore = create<GraphState>((set, get) => ({
@@ -25,71 +28,57 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   edges: INITIAL_EDGES,
   selectedNodeId: 'node-apex-mrf',
   alerts: INITIAL_ALERTS,
+  isBackendSyncing: false,
+  lastBackendError: null,
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
-  updateNodeArrivalRate: (nodeId, deltaRate) => {
+  updateNodeArrivalRate: async (nodeId, deltaRate) => {
     set((state) => {
       const updatedNodes = state.nodes.map((node) => {
         if (node.id !== nodeId) return node;
         const newRate = Math.max(2, Math.round(node.arrivalRate + deltaRate));
-        const q = calculateErlangC(newRate, node.serviceRate, node.activeBays);
         return {
           ...node,
           arrivalRate: newRate,
           currentLoad: Math.min(node.capacity, Math.round(newRate * 7.5)),
-          utilization: Math.round(q.utilization * 1000) / 1000,
-          queueLength: Math.round(q.queueLength * 10) / 10,
-          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
-          bottleneckStatus: q.severity,
-          pulseRed: q.isBottleneck,
         };
       });
       return { nodes: updatedNodes };
     });
+    await get().fetchSimulationFromBackend(true);
   },
 
-  addBaysToNode: (nodeId, bayCountDelta) => {
+  addBaysToNode: async (nodeId, bayCountDelta) => {
     set((state) => {
       const updatedNodes = state.nodes.map((node) => {
         if (node.id !== nodeId) return node;
         const newBays = Math.max(1, node.activeBays + bayCountDelta);
-        const q = calculateErlangC(node.arrivalRate, node.serviceRate, newBays);
         return {
           ...node,
           activeBays: newBays,
           capacity: newBays * 60,
-          utilization: Math.round(q.utilization * 1000) / 1000,
-          queueLength: Math.round(q.queueLength * 10) / 10,
-          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
-          bottleneckStatus: q.severity,
-          pulseRed: q.isBottleneck,
         };
       });
       return { nodes: updatedNodes };
     });
+    await get().fetchSimulationFromBackend(true);
   },
 
   setNodes: (nodes) => set({ nodes }),
 
-  mitigateBottleneck: (facilityId) => {
+  mitigateBottleneck: async (facilityId) => {
     set((state) => {
       const updatedNodes = state.nodes.map((node) => {
         if (node.id !== facilityId) return node;
         const extraBays = node.activeBays + 1;
         const easedArrival = Math.max(6, Math.round(node.arrivalRate * 0.82));
-        const q = calculateErlangC(easedArrival, node.serviceRate, extraBays);
         return {
           ...node,
           arrivalRate: easedArrival,
           activeBays: extraBays,
           capacity: extraBays * 55,
           currentLoad: Math.round(node.currentLoad * 0.8),
-          utilization: Math.round(q.utilization * 1000) / 1000,
-          queueLength: Math.round(q.queueLength * 10) / 10,
-          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
-          bottleneckStatus: q.severity,
-          pulseRed: q.isBottleneck,
         };
       });
 
@@ -112,6 +101,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
         ],
       };
     });
+    await get().fetchSimulationFromBackend(true);
   },
 
   dismissAlert: (alertId) => {
@@ -120,44 +110,115 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     }));
   },
 
-  rebalanceNetworkFlows: (divertPct) => {
+  rebalanceNetworkFlows: async (divertPct) => {
+    const factor = 1 - divertPct / 100;
     set((state) => {
-      const factor = 1 - divertPct / 100;
       const updatedNodes = state.nodes.map((node) => {
         if (node.id === 'node-apex-mrf' || node.id === 'node-central-transfer') {
           const adjArrival = Math.round(node.arrivalRate * factor);
-          const q = calculateErlangC(adjArrival, node.serviceRate, node.activeBays);
           return {
             ...node,
             arrivalRate: adjArrival,
             currentLoad: Math.round(node.currentLoad * factor),
-            utilization: Math.round(q.utilization * 1000) / 1000,
-            queueLength: Math.round(q.queueLength * 10) / 10,
-            avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
-            bottleneckStatus: q.severity,
-            pulseRed: q.isBottleneck,
           };
         }
         return node;
       });
       return { nodes: updatedNodes };
     });
+    await get().fetchSimulationFromBackend(true);
   },
 
-  recalculateAllNodes: () => {
-    set((state) => {
-      const updated = state.nodes.map((node) => {
-        const q = calculateErlangC(node.arrivalRate, node.serviceRate, node.activeBays);
-        return {
-          ...node,
-          utilization: Math.round(q.utilization * 1000) / 1000,
-          queueLength: Math.round(q.queueLength * 10) / 10,
-          avgWaitMinutes: Math.round(q.avgWaitMinutes * 10) / 10,
-          bottleneckStatus: q.severity,
-          pulseRed: q.isBottleneck,
-        };
+  recalculateAllNodes: async () => {
+    await get().fetchSimulationFromBackend(true);
+  },
+
+  fetchSimulationFromBackend: async (isWhatIf = false) => {
+    const { nodes, edges } = get();
+    set({ isBackendSyncing: true, lastBackendError: null });
+
+    const backendNodes = nodes.map((n) => ({
+      id: n.id,
+      name: n.name,
+      type: n.type,
+      capacity: n.capacity,
+      currentLoad: n.currentLoad,
+      position: n.position || { x: 0, y: 0 },
+      arrivalRate: n.arrivalRate,
+      serviceRate: n.serviceRate,
+      activeBays: n.activeBays,
+    }));
+    
+    const backendEdges = edges.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      distance: e.distanceKm,
+      throughput: e.flowRate,
+      vehicleType: e.transportMode,
+    }));
+
+    const simStoreState = useSimStore.getState();
+    const parameters = {
+      surgeMultiplier: simStoreState.surgeMultiplier,
+      bayAdjustment: simStoreState.bayAdjustment,
+      divertRatePct: simStoreState.divertRatePct,
+      greenFleetPct: simStoreState.greenFleetPct,
+    };
+
+    try {
+      const endpoint = isWhatIf ? '/api/whatif' : '/api/simulate';
+      const res = await fetch(`http://localhost:8000${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nodes: backendNodes, edges: backendEdges, parameters }),
       });
-      return { nodes: updated };
-    });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(err?.detail ?? err?.message ?? `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const sim = data?.simulation ?? {};
+
+      const queuingAnalysis: Record<string, any> = {};
+      for (const m of (sim?.node_metrics?.queuing_analysis ?? [])) {
+        queuingAnalysis[m.node_id] = m;
+      }
+
+      set((state) => ({
+        isBackendSyncing: false,
+        nodes: state.nodes.map((node) => {
+          const m = queuingAnalysis[node.id];
+          if (!m) return node;
+          const util = m.utilization ?? node.utilization;
+          const severity: 'nominal' | 'warning' | 'critical' =
+            util >= 1.0 ? 'critical' : util >= 0.85 ? 'warning' : 'nominal';
+          return {
+            ...node,
+            utilization: Math.round(util * 1000) / 1000,
+            queueLength: m.queue_length != null
+              ? Math.round(m.queue_length * 10) / 10
+              : node.queueLength,
+            avgWaitMinutes: m.wait_time_hours != null
+              ? Math.round(m.wait_time_hours * 60 * 10) / 10
+              : node.avgWaitMinutes,
+            bottleneckStatus: severity,
+            pulseRed: m.is_bottleneck ?? node.pulseRed,
+          };
+        }),
+      }));
+
+      if (sim.environmental_metrics && sim.optimizer_suggestions) {
+        simStoreState.fetchAISummaryFromBackend(
+          sim.environmental_metrics,
+          sim.optimizer_suggestions
+        );
+      }
+    } catch (err: any) {
+      console.error('[graphStore] fetchSimulationFromBackend failed:', err);
+      set({ isBackendSyncing: false, lastBackendError: err?.message ?? 'Unknown error' });
+    }
   },
 }));

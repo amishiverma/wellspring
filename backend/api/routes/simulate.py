@@ -4,26 +4,25 @@ backend/api/routes/simulate.py
 Author  : Vrinda (API & Infrastructure Architect)
 Project : Waste Flow Digital Twin — TSEC Minithon
 Purpose : FastAPI router exposing POST /api/simulate and POST /api/whatif.
-          Both endpoints accept a SimulationPayload and call stub functions
-          from engine_stubs.py — no imports from backend/engine/.
-
-Phase 4 migration path
------------------------
-  Replace the engine_stubs imports with real calls:
-    from engine.queuing       import run_queuing_simulation   # Tanishq
-    from engine.optimizer     import get_optimizer_results    # Yash
-    from engine.co2_calculator import calculate_co2e          # Yash
+          Both endpoints call the real run_full_analysis() pipeline.
 """
 
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
-from api.engine_stubs import get_ai_optimizer_summary, run_queuing_simulation
+# Ensure the engine directory is importable regardless of CWD
+_ENGINE_DIR = Path(__file__).resolve().parent.parent.parent / "engine"
+if str(_ENGINE_DIR) not in sys.path:
+    sys.path.insert(0, str(_ENGINE_DIR))
+
+from simulation_runner import run_full_analysis  # type: ignore[import]
 from models.database import SimulationHistory, get_session
 from models.schemas import SimulationPayload
 
@@ -43,8 +42,9 @@ router = APIRouter(tags=["Simulation"])
     summary="Run a full waste-flow simulation",
     description=(
         "Accepts a SimulationPayload (nodes + edges + parameters), runs the "
-        "queuing simulation and AI optimizer stubs, persists the result to "
-        "SQLite, and returns a unified JSON response."
+        "full 5-stage pipeline (M/M/c queuing → max-flow → CO2 KPIs → "
+        "optimizer suggestions → SimPy DES), persists the result to SQLite, "
+        "and returns a unified JSON response."
     ),
     status_code=status.HTTP_200_OK,
 )
@@ -53,41 +53,40 @@ async def simulate(
     session: Session = Depends(get_session),
 ) -> dict:
     """
-    Main simulation endpoint consumed by Amishi's frontend.
+    Main simulation endpoint consumed by the frontend.
 
     Steps
     -----
     1. Validate incoming SimulationPayload (Pydantic handles this automatically).
-    2. Call run_queuing_simulation() — returns enriched nodes + bottleneck data.
-    3. Call get_ai_optimizer_summary() — returns recommendations + CO2e.
+    2. Convert to plain dict via model_dump(mode='json') — avoids Pydantic
+       object references leaking into the engine layer.
+    3. Call run_full_analysis() — full 5-stage pipeline.
     4. Merge results into a single response dict.
     5. Persist input + output to SimulationHistory table.
     6. Return the merged dict.
     """
     try:
-        # ── Step 2: Queuing simulation ─────────────────────────────────────
-        sim_result = run_queuing_simulation(payload)
+        # Convert Pydantic model → plain dict so engine receives raw dicts
+        payload_dict = payload.model_dump(mode="json")
 
-        # ── Step 3: AI optimizer summary ───────────────────────────────────
-        ai_result = get_ai_optimizer_summary(payload)
+        # Run the full pipeline
+        sim_result = run_full_analysis(payload_dict)
 
-        # ── Step 4: Merge into unified response ────────────────────────────
+        # Build unified response
         response = {
             "status":    "success",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "simulation": sim_result,
-            "optimizer":  ai_result,
         }
 
-        # ── Step 5: Persist to DB ──────────────────────────────────────────
+        # Persist to DB
         record = SimulationHistory(
             input_payload_json=payload.model_dump_json(),
-            output_payload_json=json.dumps(response, ensure_ascii=False),
+            output_payload_json=json.dumps(response, ensure_ascii=False, default=str),
         )
         session.add(record)
         session.commit()
 
-        # ── Step 6: Return ─────────────────────────────────────────────────
         return response
 
     except Exception as exc:
@@ -119,32 +118,30 @@ async def whatif(
     """
     What-if scenario endpoint.
 
-    The frontend sends a *modified* SimulationPayload (e.g., Amishi's slider
-    bumped a node capacity, or an edge was deactivated). We run the same
-    pipeline and return results tagged as a scenario run so the UI can
-    render a before/after comparison.
+    The frontend sends a *modified* SimulationPayload (e.g., slider bumped a
+    node capacity, or an edge was deactivated). We run the same pipeline and
+    return results tagged as a scenario run so the UI can render a
+    before/after comparison.
     """
     try:
-        # ── Run the same pipeline as /simulate ────────────────────────────
-        sim_result = run_queuing_simulation(payload)
-        ai_result  = get_ai_optimizer_summary(payload)
+        payload_dict = payload.model_dump(mode="json")
+
+        sim_result = run_full_analysis(payload_dict)
 
         response = {
-            "status":       "success",
+            "status":        "success",
             "scenario_type": "what_if",
-            "timestamp":    datetime.now(timezone.utc).isoformat(),
-            "simulation":   sim_result,
-            "optimizer":    ai_result,
+            "timestamp":     datetime.now(timezone.utc).isoformat(),
+            "simulation":    sim_result,
             "scenario_note": (
-                "This is a what-if run. Compare enriched_nodes and "
-                "co2e_estimate_kg against your baseline /simulate result."
+                "This is a what-if run. Compare environmental_metrics and "
+                "optimizer_suggestions against your baseline /simulate result."
             ),
         }
 
-        # ── Persist scenario run separately ───────────────────────────────
         record = SimulationHistory(
             input_payload_json=payload.model_dump_json(),
-            output_payload_json=json.dumps(response, ensure_ascii=False),
+            output_payload_json=json.dumps(response, ensure_ascii=False, default=str),
         )
         session.add(record)
         session.commit()

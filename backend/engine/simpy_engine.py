@@ -290,34 +290,6 @@ def run_simulation(
                 avg_travel_time, results
             ))
     
-    # Build node lookup for service rates
-    node_lookup = {n["id"]: n for n in nodes}
-    
-    # Also generate trucks from residential nodes to their first transfer station
-    for node in nodes:
-        if node.get("type") == "residential":
-            node_id = node.get("id")
-            arrival_tons = float(node.get("arrival_rate_tons_hr", 0.0))
-            if arrival_tons > 0:
-                # Find first transfer station downstream
-                for edge in edges:
-                    if edge.get("source") == node_id:
-                        target = edge.get("target")
-                        if target in resources:
-                            num_trucks = int(edge.get("num_trucks", 1))
-                            truck_capacity = float(edge.get("truck_capacity_tons", 10.0))
-                            trips_per_hour = float(edge.get("trips_per_hour", 1.0))
-                            travel_time = edge_travel_times.get((node_id, target), 0.1)
-                            
-                            arrival_rate = num_trucks * trips_per_hour
-                            service_rate = float(node_lookup.get(target, {}).get("service_rate_per_server", 1.0))
-                            
-                            env.process(truck_generator(
-                                env, target, resources[target], arrival_rate, service_rate,
-                                travel_time, results
-                            ))
-                        break
-    
     # Run simulation
     env.run(until=sim_time_hours)
     

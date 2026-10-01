@@ -1,24 +1,51 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Prata&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
+/* "The Seasons" — High-contrast luxury display serif ("Quiet Luxury" / "Old Money" aesthetic) */
 @font-face {
-  font-family: 'Repose Display';
-  src: url('/assets/fonts/repose-display.woff2') format('woff2');
-  font-weight: 400 700;
+  font-family: 'The Seasons';
+  src: url('/assets/fonts/the-seasons-bold.woff2') format('woff2');
+  font-weight: 600 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Repose Display';
-  src: url('/assets/fonts/repose-display-italic.woff2') format('woff2');
-  font-weight: 400 700;
-  font-style: italic;
+  font-family: 'The Seasons';
+  src: url('/assets/fonts/the-seasons-regular.woff2') format('woff2');
+  font-weight: 300 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'The Seasons';
+  src: url('/assets/fonts/the-seasons.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .font-repose,
+  .font-editorial,
+  .font-luxury,
+  .font-seasons {
+    font-family: 'The Seasons', 'Bodoni Moda', 'Playfair Display', 'Prata', 'Cormorant Garamond', Georgia, serif;
+    font-optical-sizing: auto;
+    font-variation-settings: 'opsz' 96;
+    font-feature-settings: 'swsh' 1, 'dlig' 1, 'liga' 1, 'calt' 1;
+  }
+
+  .font-bodoni {
+    font-family: 'Bodoni Moda', serif;
+    font-variation-settings: 'opsz' 96;
+  }
+}
 
 @layer base {
   :root {

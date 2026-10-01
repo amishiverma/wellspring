@@ -50,9 +50,17 @@ export default {
         }
       },
       fontFamily: {
-        repose: ['"Repose Display"', 'Georgia', 'serif'],
+        repose: ['"The Seasons"', '"Bodoni Moda"', '"Playfair Display"', '"Prata"', 'Georgia', 'serif'],
+        seasons: ['"The Seasons"', '"Bodoni Moda"', '"Playfair Display"', '"Prata"', 'Georgia', 'serif'],
+        serif: ['"The Seasons"', '"Bodoni Moda"', '"Playfair Display"', '"Prata"', 'Georgia', 'serif'],
+        editorial: ['"The Seasons"', '"Bodoni Moda"', '"Playfair Display"', '"Prata"', 'Georgia', 'serif'],
+        luxury: ['"The Seasons"', '"Bodoni Moda"', '"Playfair Display"', '"Prata"', 'Georgia', 'serif'],
+        bodoni: ['"Bodoni Moda"', 'serif'],
+        playfair: ['"Playfair Display"', 'serif'],
+        prata: ['"Prata"', 'serif'],
+        cormorant: ['"Cormorant Garamond"', 'serif'],
         sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
-        display: ['Syne', 'Outfit', 'sans-serif'],
+        display: ['"The Seasons"', '"Bodoni Moda"', 'Syne', 'Outfit', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       animation: {

@@ -64,7 +64,7 @@ export const LandingPageView: React.FC = () => {
       {/* Floating Top Minimal Header */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-12 py-6 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2">
-          <span className="font-repose text-2xl sm:text-3xl tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+          <span className="font-repose text-2xl sm:text-3xl font-normal tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
             Wellspring
           </span>
         </div>
@@ -96,7 +96,7 @@ export const LandingPageView: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="font-repose text-7xl sm:text-8xl md:text-9xl text-white font-normal leading-[0.92] tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
+            <h1 className="font-repose text-7xl sm:text-8xl md:text-9xl text-white font-medium sm:font-semibold leading-[0.92] tracking-tight drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
               Flow without
               <br />
               friction.

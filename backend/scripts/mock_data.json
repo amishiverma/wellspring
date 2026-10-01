@@ -1,0 +1,295 @@
+{
+  "nodes": [
+    {
+      "id": "node_001",
+      "name": "Dharavi Residential Collection Point",
+      "type": "collection_point",
+      "capacity": 120.0,
+      "current_load": 108.5,
+      "coordinates": [
+        72.8546,
+        19.0386
+      ],
+      "utilization": 0.9042,
+      "is_bottleneck": true
+    },
+    {
+      "id": "node_002",
+      "name": "Kurla Market Collection Point",
+      "type": "collection_point",
+      "capacity": 90.0,
+      "current_load": 61.0,
+      "coordinates": [
+        72.8791,
+        19.0728
+      ],
+      "utilization": 0.6778,
+      "is_bottleneck": false
+    },
+    {
+      "id": "node_003",
+      "name": "Andheri West Collection Hub",
+      "type": "collection_point",
+      "capacity": 150.0,
+      "current_load": 133.5,
+      "coordinates": [
+        72.8347,
+        19.1197
+      ],
+      "utilization": 0.89,
+      "is_bottleneck": true
+    },
+    {
+      "id": "node_004",
+      "name": "Chembur Residential Collection Point",
+      "type": "collection_point",
+      "capacity": 80.0,
+      "current_load": 52.0,
+      "coordinates": [
+        72.8992,
+        19.0522
+      ],
+      "utilization": 0.65,
+      "is_bottleneck": false
+    },
+    {
+      "id": "node_005",
+      "name": "Wadala Transfer Station",
+      "type": "transfer_station",
+      "capacity": 300.0,
+      "current_load": 262.0,
+      "coordinates": [
+        72.8558,
+        19.0162
+      ],
+      "utilization": 0.8733,
+      "is_bottleneck": true
+    },
+    {
+      "id": "node_006",
+      "name": "Versova Transfer & Compaction Hub",
+      "type": "transfer_station",
+      "capacity": 220.0,
+      "current_load": 154.0,
+      "coordinates": [
+        72.8096,
+        19.1315
+      ],
+      "utilization": 0.7,
+      "is_bottleneck": false
+    },
+    {
+      "id": "node_007",
+      "name": "Govandi Sorting Facility",
+      "type": "sorting_facility",
+      "capacity": 400.0,
+      "current_load": 312.0,
+      "coordinates": [
+        72.9183,
+        19.0545
+      ],
+      "utilization": 0.78,
+      "is_bottleneck": false
+    },
+    {
+      "id": "node_008",
+      "name": "Mulund Sorting & Segregation Centre",
+      "type": "sorting_facility",
+      "capacity": 280.0,
+      "current_load": 238.0,
+      "coordinates": [
+        72.9567,
+        19.1762
+      ],
+      "utilization": 0.85,
+      "is_bottleneck": true
+    },
+    {
+      "id": "node_009",
+      "name": "Bhandup Plastics Recycling Plant",
+      "type": "recycling_plant",
+      "capacity": 180.0,
+      "current_load": 99.0,
+      "coordinates": [
+        72.9396,
+        19.1553
+      ],
+      "utilization": 0.55,
+      "is_bottleneck": false
+    },
+    {
+      "id": "node_010",
+      "name": "Deonar Landfill & Waste-to-Energy Plant",
+      "type": "waste_to_energy",
+      "capacity": 600.0,
+      "current_load": 487.0,
+      "coordinates": [
+        72.9175,
+        19.0433
+      ],
+      "utilization": 0.8117,
+      "is_bottleneck": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_001",
+      "source": "node_001",
+      "target": "node_005",
+      "distance": 3.8,
+      "throughput": 108.5,
+      "status": "congested",
+      "vehicle_type": "compactor_truck",
+      "flow_density": 28.5526
+    },
+    {
+      "id": "edge_002",
+      "source": "node_002",
+      "target": "node_005",
+      "distance": 5.2,
+      "throughput": 61.0,
+      "status": "active",
+      "vehicle_type": "compactor_truck",
+      "flow_density": 11.7308
+    },
+    {
+      "id": "edge_003",
+      "source": "node_003",
+      "target": "node_006",
+      "distance": 4.1,
+      "throughput": 133.5,
+      "status": "congested",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 32.561
+    },
+    {
+      "id": "edge_004",
+      "source": "node_004",
+      "target": "node_005",
+      "distance": 6.7,
+      "throughput": 52.0,
+      "status": "active",
+      "vehicle_type": "compactor_truck",
+      "flow_density": 7.7612
+    },
+    {
+      "id": "edge_005",
+      "source": "node_004",
+      "target": "node_007",
+      "distance": 4.9,
+      "throughput": 0.0,
+      "status": "inactive",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 0.0
+    },
+    {
+      "id": "edge_006",
+      "source": "node_005",
+      "target": "node_007",
+      "distance": 8.3,
+      "throughput": 170.0,
+      "status": "congested",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 20.4819
+    },
+    {
+      "id": "edge_007",
+      "source": "node_005",
+      "target": "node_008",
+      "distance": 14.6,
+      "throughput": 92.0,
+      "status": "active",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 6.3014
+    },
+    {
+      "id": "edge_008",
+      "source": "node_006",
+      "target": "node_008",
+      "distance": 22.1,
+      "throughput": 154.0,
+      "status": "active",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 6.9683
+    },
+    {
+      "id": "edge_009",
+      "source": "node_006",
+      "target": "node_009",
+      "distance": 19.8,
+      "throughput": 0.0,
+      "status": "inactive",
+      "vehicle_type": "electric_van",
+      "flow_density": 0.0
+    },
+    {
+      "id": "edge_010",
+      "source": "node_007",
+      "target": "node_010",
+      "distance": 2.6,
+      "throughput": 205.0,
+      "status": "active",
+      "vehicle_type": "compactor_truck",
+      "flow_density": 78.8462
+    },
+    {
+      "id": "edge_011",
+      "source": "node_007",
+      "target": "node_009",
+      "distance": 9.4,
+      "throughput": 107.0,
+      "status": "active",
+      "vehicle_type": "electric_van",
+      "flow_density": 11.383
+    },
+    {
+      "id": "edge_012",
+      "source": "node_008",
+      "target": "node_009",
+      "distance": 5.3,
+      "throughput": 99.0,
+      "status": "active",
+      "vehicle_type": "electric_van",
+      "flow_density": 18.6792
+    },
+    {
+      "id": "edge_013",
+      "source": "node_008",
+      "target": "node_010",
+      "distance": 18.7,
+      "throughput": 139.0,
+      "status": "active",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 7.4332
+    },
+    {
+      "id": "edge_014",
+      "source": "node_009",
+      "target": "node_010",
+      "distance": 7.2,
+      "throughput": 43.0,
+      "status": "active",
+      "vehicle_type": "compactor_truck",
+      "flow_density": 5.9722
+    },
+    {
+      "id": "edge_015",
+      "source": "node_001",
+      "target": "node_010",
+      "distance": 12.5,
+      "throughput": 0.0,
+      "status": "inactive",
+      "vehicle_type": "tipper_truck",
+      "flow_density": 0.0
+    }
+  ],
+  "parameters": {
+    "simulation_duration_days": 30,
+    "time_step_hours": 1.0,
+    "bottleneck_threshold": 0.85,
+    "emission_factor_kg_per_km": 0.268,
+    "diesel_price_per_litre": 92.5,
+    "fuel_efficiency_km_per_litre": 5.5,
+    "enable_what_if": true
+  }
+}

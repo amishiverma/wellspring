@@ -21,6 +21,15 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import sys
+from pathlib import Path
+
+# Ensure backend directory is in sys.path regardless of execution CWD
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from api.routes.simulate import router as simulate_router
 from models.database import create_db_and_tables
 
 
@@ -117,7 +126,9 @@ async def root() -> dict:
 # ---------------------------------------------------------------------------
 # Future router mounts (Phase 3 — DO NOT uncomment until engine is ready)
 # ---------------------------------------------------------------------------
-# from api.routes import simulate, whatif, explain
-# app.include_router(simulate.router, prefix="/api")
-# app.include_router(whatif.router,   prefix="/api")
-# app.include_router(explain.router,  prefix="/api")
+# Phase 3 — simulate router is live
+app.include_router(simulate_router, prefix="/api")
+
+# Phase 4 stubs (uncomment when Yash's explain route is ready)
+# from api.routes import explain
+# app.include_router(explain.router, prefix="/api")

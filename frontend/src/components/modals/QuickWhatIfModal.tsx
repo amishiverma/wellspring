@@ -20,7 +20,7 @@ export const QuickWhatIfModal: React.FC = () => {
     applyPresetScenario,
   } = useSimStore();
 
-  const { rebalanceNetworkFlows, nodes } = useGraphStore();
+  const { rebalanceNetworkFlows } = useGraphStore();
 
   if (!isQuickModalOpen) return null;
 
@@ -29,7 +29,7 @@ export const QuickWhatIfModal: React.FC = () => {
       particleCount: 80,
       spread: 70,
       origin: { y: 0.5 },
-      colors: ['#10b981', '#00f0ff', '#8b5cf6'],
+      colors: ['#10b981', '#38bdf8', '#0f172a'],
     });
     rebalanceNetworkFlows(divertRatePct);
     setIsQuickModalOpen(false);
@@ -40,24 +40,24 @@ export const QuickWhatIfModal: React.FC = () => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian-950/75 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 backdrop-blur-xs select-none">
         <motion.div
           initial={{ scale: 0.95, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}
-          className="relative w-full max-w-xl rounded-3xl glass-panel p-6 sm:p-8 border border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.15)] bg-obsidian-900"
+          className="relative w-full max-w-xl rounded-[32px] p-6 sm:p-8 border border-white/85 shadow-2xl bg-white/85 backdrop-blur-3xl text-stone-900"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+          <div className="flex items-center justify-between pb-4 border-b border-stone-200/50">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100/90 text-emerald-800 flex items-center justify-center shadow-xs">
                 <Zap className="w-5 h-5 fill-current" />
               </div>
               <div>
-                <h3 className="text-lg font-display font-bold text-white tracking-tight">
+                <h3 className="text-lg font-sans font-bold text-stone-900 tracking-tight">
                   Instant What-If Simulation Runner
                 </h3>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-stone-500 font-mono">
                   Inject live variables into Erlang-C and network routing
                 </p>
               </div>
@@ -65,7 +65,7 @@ export const QuickWhatIfModal: React.FC = () => {
 
             <button
               onClick={() => setIsQuickModalOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition"
+              className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -73,23 +73,23 @@ export const QuickWhatIfModal: React.FC = () => {
 
           {/* Quick Presets */}
           <div className="mt-4">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
+            <span className="text-[11px] font-mono uppercase tracking-wider font-semibold text-stone-500 block mb-2">
               Quick Preset Contingencies:
             </span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => applyPresetScenario('surge')}
-                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-left transition text-xs font-mono"
+                className="p-3 rounded-2xl bg-white/70 hover:bg-rose-50/70 border border-white/80 hover:border-rose-200 text-left transition text-xs font-mono group shadow-xs"
               >
-                <span className="text-rose-400 font-bold block mb-0.5">● 1.6x Peak Surge</span>
-                <span className="text-slate-400 text-[10px]">Test queue buffer limits</span>
+                <span className="text-rose-700 font-bold block mb-0.5">● 1.6x Peak Surge</span>
+                <span className="text-stone-500 text-[10px]">Test queue buffer limits</span>
               </button>
               <button
                 onClick={() => applyPresetScenario('mitigated')}
-                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-left transition text-xs font-mono"
+                className="p-3 rounded-2xl bg-white/70 hover:bg-emerald-50/70 border border-white/80 hover:border-emerald-200 text-left transition text-xs font-mono group shadow-xs"
               >
-                <span className="text-emerald-400 font-bold block mb-0.5">● Dynamic Mitigate</span>
-                <span className="text-slate-400 text-[10px]">+2 Bays, 25% Reroute</span>
+                <span className="text-emerald-800 font-bold block mb-0.5">● Dynamic Mitigate</span>
+                <span className="text-stone-500 text-[10px]">+2 Bays, 25% Reroute</span>
               </button>
             </div>
           </div>
@@ -98,8 +98,8 @@ export const QuickWhatIfModal: React.FC = () => {
           <div className="mt-5 space-y-4 font-mono text-xs">
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-slate-400">Inflow Surge Rate:</span>
-                <span className="text-cyan-400 font-bold">{surgeMultiplier.toFixed(1)}x</span>
+                <span className="text-stone-600">Inflow Surge Rate:</span>
+                <span className="text-stone-900 font-bold">{surgeMultiplier.toFixed(1)}x</span>
               </div>
               <input
                 type="range"
@@ -108,14 +108,14 @@ export const QuickWhatIfModal: React.FC = () => {
                 step="0.1"
                 value={surgeMultiplier}
                 onChange={(e) => setSurgeMultiplier(parseFloat(e.target.value))}
-                className="w-full accent-cyan-500 cursor-pointer"
+                className="w-full accent-slate-900 cursor-pointer"
               />
             </div>
 
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-slate-400">Dynamic Bays Expansion:</span>
-                <span className="text-emerald-400 font-bold">
+                <span className="text-stone-600">Dynamic Bays Expansion:</span>
+                <span className="text-emerald-800 font-bold">
                   {bayAdjustment > 0 ? `+${bayAdjustment}` : bayAdjustment} Bays
                 </span>
               </div>
@@ -126,14 +126,14 @@ export const QuickWhatIfModal: React.FC = () => {
                 step="1"
                 value={bayAdjustment}
                 onChange={(e) => setBayAdjustment(parseInt(e.target.value))}
-                className="w-full accent-emerald-500 cursor-pointer"
+                className="w-full accent-slate-900 cursor-pointer"
               />
             </div>
 
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-slate-400">Traffic Inflow Diversion:</span>
-                <span className="text-violet-400 font-bold">{divertRatePct}%</span>
+                <span className="text-stone-600">Traffic Inflow Diversion:</span>
+                <span className="text-sky-800 font-bold">{divertRatePct}%</span>
               </div>
               <input
                 type="range"
@@ -142,38 +142,38 @@ export const QuickWhatIfModal: React.FC = () => {
                 step="5"
                 value={divertRatePct}
                 onChange={(e) => setDivertRatePct(parseInt(e.target.value))}
-                className="w-full accent-violet-500 cursor-pointer"
+                className="w-full accent-slate-900 cursor-pointer"
               />
             </div>
           </div>
 
           {/* Projected Outcomes Preview */}
-          <div className="mt-5 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] grid grid-cols-2 gap-3 text-center font-mono">
-            <div className="p-2 rounded-xl bg-white/[0.02]">
-              <span className="text-[10px] text-slate-400 block mb-0.5">Wait Reduction</span>
-              <span className="text-base font-bold text-emerald-400">
+          <div className="mt-5 p-4 rounded-2xl bg-white/60 border border-white/80 grid grid-cols-2 gap-3 text-center font-mono">
+            <div className="p-2.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
+              <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold block mb-0.5">Wait Reduction</span>
+              <span className="text-lg font-bold text-emerald-800">
                 -{projectedWaitReduction}%
               </span>
             </div>
-            <div className="p-2 rounded-xl bg-white/[0.02]">
-              <span className="text-[10px] text-slate-400 block mb-0.5">Est. CO2e Saved</span>
-              <span className="text-base font-bold text-cyan-300">
+            <div className="p-2.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
+              <span className="text-[10px] text-stone-400 uppercase tracking-wider font-semibold block mb-0.5">Est. CO2e Saved</span>
+              <span className="text-lg font-bold text-sky-800">
                 +{projectedCo2Savings} MT / day
               </span>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="mt-6 flex items-center justify-end gap-3">
+          <div className="mt-6 flex items-center justify-end gap-2.5">
             <button
               onClick={() => setIsQuickModalOpen(false)}
-              className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-slate-300 text-xs font-mono transition"
+              className="px-4 py-2 rounded-full bg-white/80 hover:bg-white text-stone-700 text-xs font-mono transition border border-stone-200/60 shadow-xs"
             >
               Cancel
             </button>
             <button
               onClick={handleApply}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-obsidian-950 font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(16,185,129,0.35)] active:scale-95"
+              className="px-6 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs uppercase tracking-wider transition shadow-md hover:shadow-lg active:scale-95"
             >
               Apply to Digital Twin
             </button>

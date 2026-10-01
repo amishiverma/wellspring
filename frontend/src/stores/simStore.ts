@@ -25,6 +25,7 @@ interface SimState {
   aiPlannerBullets: string[];
   isOptimizing: boolean;
   activeScenarioName: string;
+  isAIPlannerDrawerOpen: boolean;
   
   // Benchmark comparison table
   scenarioComparisons: ScenarioComparison[];
@@ -34,6 +35,7 @@ interface SimState {
   togglePause: () => void;
   setSimSpeed: (speed: 1 | 2 | 5) => void;
   setIsQuickModalOpen: (open: boolean) => void;
+  setIsAIPlannerDrawerOpen: (open: boolean) => void;
   setSurgeMultiplier: (val: number) => void;
   setBayAdjustment: (val: number) => void;
   setDivertRatePct: (val: number) => void;
@@ -54,6 +56,8 @@ export const useSimStore = create<SimState>((set, get) => ({
   simSpeed: 1,
   simulatedTime: '09:14:22 EST',
   isQuickModalOpen: false,
+  isAIPlannerDrawerOpen: false,
+  setIsAIPlannerDrawerOpen: (open: boolean) => set({ isAIPlannerDrawerOpen: open }),
 
   surgeMultiplier: 1.0,
   bayAdjustment: 0,

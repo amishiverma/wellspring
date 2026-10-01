@@ -27,24 +27,24 @@ export const NodeDetailModal: React.FC = () => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex justify-end bg-obsidian-950/60 backdrop-blur-sm pointer-events-auto">
+      <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/35 backdrop-blur-xs pointer-events-auto select-none">
         <motion.div
           initial={{ x: '100%', opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-          className="relative w-full max-w-lg h-full bg-obsidian-900 border-l border-white/[0.08] shadow-2xl overflow-y-auto p-6 flex flex-col justify-between"
+          className="relative w-full max-w-lg h-full bg-white/85 backdrop-blur-3xl border-l border-white/85 shadow-2xl overflow-y-auto p-6 sm:p-8 flex flex-col justify-between"
         >
           {/* Header */}
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-200/50">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {node.type.toUpperCase()} NODE
+                <span className="px-3 py-1 text-[10px] font-mono font-semibold uppercase rounded-full bg-stone-100 text-stone-700 border border-stone-200">
+                  {node.type.toUpperCase()} FACILITY
                 </span>
                 {node.pulseRed && (
-                  <span className="px-2 py-0.5 text-[10px] font-mono uppercase rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
-                    <AlertTriangle className="w-2.5 h-2.5 text-rose-400" />
+                  <span className="px-3 py-1 text-[10px] font-mono font-semibold uppercase rounded-full bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1 shadow-xs">
+                    <AlertTriangle className="w-3 h-3 text-rose-600" />
                     BOTTLENECK ACTIVE
                   </span>
                 )}
@@ -52,7 +52,7 @@ export const NodeDetailModal: React.FC = () => {
 
               <button
                 onClick={() => setSelectedNodeId(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -60,101 +60,101 @@ export const NodeDetailModal: React.FC = () => {
 
             {/* Title & Description */}
             <div className="mt-4">
-              <h3 className="text-xl font-display font-bold text-white tracking-tight">
+              <h3 className="text-xl font-sans font-bold text-stone-900 tracking-tight">
                 {node.name}
               </h3>
-              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+              <p className="mt-1 text-xs text-stone-500 leading-relaxed">
                 {node.description}
               </p>
             </div>
 
             {/* Erlang C Live Queue Theory Diagnostic */}
-            <div className="mt-6 p-4 rounded-xl glass-panel-subtle border border-white/[0.06]">
+            <div className="mt-6 p-5 rounded-2xl bg-white/60 border border-white/80 shadow-xs">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-mono font-bold text-cyan-400 uppercase flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5" /> Erlang-C Queueing Telemetry
+                <span className="text-xs font-mono font-bold text-stone-800 uppercase flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-emerald-700" /> Erlang-C Queueing Telemetry
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">
+                <span className="text-[10px] font-mono text-stone-500 font-medium">
                   M/M/{node.activeBays} Model
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                  <span className="text-[10px] text-slate-400 block mb-0.5">
+                <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
+                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
                     Traffic Intensity (ρ)
                   </span>
                   <span
-                    className={`text-base font-bold ${
+                    className={`text-xl font-bold ${
                       q.severity === 'critical'
-                        ? 'text-rose-400'
+                        ? 'text-rose-600'
                         : q.severity === 'warning'
-                        ? 'text-amber-400'
-                        : 'text-emerald-400'
+                        ? 'text-amber-600'
+                        : 'text-emerald-700'
                     }`}
                   >
                     {Math.round(q.utilization * 100)}%
                   </span>
-                  <span className="text-[9px] text-slate-400 block mt-0.5">
+                  <span className="text-[10px] text-stone-500 block mt-0.5">
                     {q.severity === 'critical' ? 'Capacity Exceeded' : 'Flow Balanced'}
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                  <span className="text-[10px] text-slate-400 block mb-0.5">
+                <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
+                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
                     Wait Probability P(W&gt;0)
                   </span>
-                  <span className="text-base font-bold text-white">
+                  <span className="text-xl font-bold text-stone-900">
                     {Math.round(q.probWait * 100)}%
                   </span>
-                  <span className="text-[9px] text-slate-400 block mt-0.5">
+                  <span className="text-[10px] text-stone-500 block mt-0.5">
                     Erlang-C Delay Chance
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                  <span className="text-[10px] text-slate-400 block mb-0.5">
+                <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
+                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
                     Queue Length (Lq)
                   </span>
-                  <span className="text-base font-bold text-cyan-300">
+                  <span className="text-xl font-bold text-sky-800">
                     {Math.round(q.queueLength * 10) / 10} trucks
                   </span>
-                  <span className="text-[9px] text-slate-400 block mt-0.5">
+                  <span className="text-[10px] text-stone-500 block mt-0.5">
                     Staged at Inbound Gates
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                  <span className="text-[10px] text-slate-400 block mb-0.5">
+                <div className="p-3.5 rounded-xl bg-white/80 border border-white/80 shadow-xs">
+                  <span className="text-[10px] text-stone-400 block mb-0.5 uppercase tracking-wider font-semibold">
                     Avg Queue Delay (Wq)
                   </span>
                   <span
-                    className={`text-base font-bold ${
-                      q.avgWaitMinutes > 15 ? 'text-rose-400' : 'text-emerald-400'
+                    className={`text-xl font-bold ${
+                      q.avgWaitMinutes > 15 ? 'text-rose-600' : 'text-emerald-700'
                     }`}
                   >
                     {Math.round(q.avgWaitMinutes * 10) / 10} mins
                   </span>
-                  <span className="text-[9px] text-slate-400 block mt-0.5">
+                  <span className="text-[10px] text-stone-500 block mt-0.5">
                     Total in system: {Math.round(q.totalSystemTimeMinutes)}m
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Interactive Control Knobs */}
-            <div className="mt-5 space-y-4">
-              <h4 className="text-xs font-mono uppercase tracking-wider text-slate-400">
+            {/* Interactive Capacity Controls */}
+            <div className="mt-5 space-y-3">
+              <h4 className="text-xs font-mono uppercase tracking-wider font-semibold text-stone-500">
                 Dynamic Capacity Controls
               </h4>
 
               {/* Bay Adjustment */}
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-white/60 border border-white/80 flex items-center justify-between shadow-xs">
                 <div>
-                  <div className="text-xs font-semibold text-white">
+                  <div className="text-xs font-semibold text-stone-900">
                     Active Service Bays (c)
                   </div>
-                  <div className="text-[11px] text-slate-400 font-mono">
+                  <div className="text-[11px] text-stone-500 font-mono">
                     Service rate: {node.serviceRate} trucks/bay/hr
                   </div>
                 </div>
@@ -163,16 +163,16 @@ export const NodeDetailModal: React.FC = () => {
                   <button
                     onClick={() => addBaysToNode(node.id, -1)}
                     disabled={node.activeBays <= 1}
-                    className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white disabled:opacity-30 transition"
+                    className="p-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 disabled:opacity-30 transition shadow-xs"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="font-mono font-bold text-white w-6 text-center text-sm">
+                  <span className="font-mono font-bold text-stone-900 w-6 text-center text-sm">
                     {node.activeBays}
                   </span>
                   <button
                     onClick={() => addBaysToNode(node.id, 1)}
-                    className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition"
+                    className="p-1.5 rounded-lg bg-emerald-100/80 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -180,12 +180,12 @@ export const NodeDetailModal: React.FC = () => {
               </div>
 
               {/* Arrival Rate Surge Adjustment */}
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-white/60 border border-white/80 flex items-center justify-between shadow-xs">
                 <div>
-                  <div className="text-xs font-semibold text-white">
+                  <div className="text-xs font-semibold text-stone-900">
                     Inflow Arrival Rate (λ)
                   </div>
-                  <div className="text-[11px] text-slate-400 font-mono">
+                  <div className="text-[11px] text-stone-500 font-mono">
                     {node.arrivalRate} trucks/hr ({Math.round(node.arrivalRate * 7.5)} MT/hr)
                   </div>
                 </div>
@@ -193,16 +193,16 @@ export const NodeDetailModal: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => updateNodeArrivalRate(node.id, -2)}
-                    className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white transition"
+                    className="p-1.5 rounded-lg bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 transition shadow-xs"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="font-mono font-bold text-white w-8 text-center text-sm">
+                  <span className="font-mono font-bold text-stone-900 w-8 text-center text-sm">
                     {node.arrivalRate}
                   </span>
                   <button
                     onClick={() => updateNodeArrivalRate(node.id, 2)}
-                    className="p-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 transition"
+                    className="p-1.5 rounded-lg bg-sky-100/80 hover:bg-sky-100 text-sky-800 border border-sky-200 transition shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -212,14 +212,14 @@ export const NodeDetailModal: React.FC = () => {
 
             {/* Accepted Waste Streams */}
             <div className="mt-5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider font-semibold text-stone-500 block mb-2">
                 Processed Waste Streams
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {node.wasteTypes.map((wt, i) => (
                   <span
                     key={i}
-                    className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-slate-300 text-xs border border-white/[0.06] font-mono"
+                    className="px-3 py-1 rounded-full bg-white/80 text-stone-700 text-xs border border-white/80 font-mono font-medium shadow-xs"
                   >
                     {wt}
                   </span>
@@ -229,22 +229,22 @@ export const NodeDetailModal: React.FC = () => {
           </div>
 
           {/* Bottom Mitigate Button */}
-          <div className="pt-6 border-t border-white/[0.08] space-y-2">
+          <div className="pt-6 border-t border-stone-200/50 space-y-2.5">
             {node.pulseRed && (
               <button
                 onClick={() => {
                   mitigateBottleneck(node.id);
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-obsidian-950 font-bold text-xs uppercase tracking-wider transition shadow-[0_0_25px_rgba(16,185,129,0.35)] hover:shadow-[0_0_35px_rgba(16,185,129,0.5)] active:scale-98 flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs uppercase tracking-wider transition shadow-md hover:shadow-lg active:scale-98 flex items-center justify-center gap-2"
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 Mitigate Bottleneck (Add Bay + Divert 18%)
               </button>
             )}
 
             <button
               onClick={() => setSelectedNodeId(null)}
-              className="w-full py-2 px-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-mono transition"
+              className="w-full py-2.5 px-4 rounded-full bg-white/80 hover:bg-white text-stone-700 text-xs font-mono font-medium transition border border-stone-200/60 shadow-xs"
             >
               Close Inspector
             </button>

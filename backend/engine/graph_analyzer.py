@@ -313,7 +313,8 @@ def get_edge_utilization(G: nx.DiGraph, flow_dict: dict) -> dict[str, dict]:
             continue
         orig_u = _resolve_original_id(u)
         orig_v = _resolve_original_id(v)
-        flow = flow_dict.get(u, {}).get(v, 0)
+        # Use original IDs to look up flow from flow_dict
+        flow = flow_dict.get(orig_u, {}).get(orig_v, 0)
         capacity = data.get("capacity", 0)
         util = flow / capacity if capacity > 0 else 0.0
         utilization[f"{orig_u}->{orig_v}"] = {

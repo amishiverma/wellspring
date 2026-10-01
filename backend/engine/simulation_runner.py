@@ -92,7 +92,7 @@ def _safe_node_metrics(nodes: list[dict]) -> tuple[list[dict], list[dict]]:
     all_metrics     : list[dict]  — metrics for every facility node
     bottleneck_list : list[dict]  — filtered to nodes with utilisation > 0.85
     """
-    # Filter to facility nodes only; use .get() throughout to survive malformed dicts
+    # Nodes are already transformed by run_full_analysis
     facility_nodes = [
         n for n in nodes
         if n.get("type", "") in _FACILITY_TYPES
@@ -245,21 +245,46 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
     errors: list[str] = []
 
     # ── Defensive extraction with .get() ─────────────────────────────────────
-    nodes: list[dict] = payload.get("nodes", [])
-    edges: list[dict] = payload.get("edges", [])
+    raw_nodes: list[dict] = payload.get("nodes", [])
+    raw_edges: list[dict] = payload.get("edges", [])
 
-    if not isinstance(nodes, list):
-        nodes = []
+    if not isinstance(raw_nodes, list):
+        raw_nodes = []
         errors.append("payload['nodes'] was not a list; defaulted to []")
-    if not isinstance(edges, list):
-        edges = []
+    if not isinstance(raw_edges, list):
+        raw_edges = []
         errors.append("payload['edges'] was not a list; defaulted to []")
 
     # Strip any node/edge dicts that don't at least have an 'id' field
-    nodes = [n for n in nodes if isinstance(n, dict) and n.get("id")]
-    edges = [e for e in edges if isinstance(e, dict) and e.get("source") and e.get("target")]
+    raw_nodes = [n for n in raw_nodes if isinstance(n, dict) and n.get("id")]
+    raw_edges = [e for e in raw_edges if isinstance(e, dict) and e.get("source") and e.get("target")]
 
-    # Identify source and sink IDs for graph analysis
+    # ── Transform node keys to match engine expectations ──────────────────────
+    # Frontend/Pydantic: arrivalRate/arrival_rate, serviceRate/service_rate, activeBays/active_bays
+    # Engines expect: arrival_rate_tons_hr, service_rate_per_server, num_servers
+    def _transform_node(n: dict) -> dict:
+        arrival = float(n.get("arrival_rate_tons_hr") 
+                     or n.get("arrival_rate") 
+                     or n.get("arrivalRate") 
+                     or 0)
+        service = float(n.get("service_rate_per_server") 
+                     or n.get("service_rate") 
+                     or n.get("serviceRate") 
+                     or 0)
+        servers = int(n.get("num_servers") 
+                   or n.get("active_bays") 
+                   or n.get("activeBays") 
+                   or 0)
+        return {
+            **n,
+            "arrival_rate_tons_hr": arrival,
+            "service_rate_per_server": service,
+            "num_servers": servers,
+        }
+
+    nodes = [_transform_node(n) for n in raw_nodes]
+
+    # Identify source and sink IDs for graph analysis (uses transformed nodes)
     source_id, sink_id = _find_source_and_sink(nodes)
 
     # ── Step 1: M/M/c Queuing Analysis ───────────────────────────────────────
@@ -274,7 +299,7 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
     logger.info("[Step 2] Running graph flow analysis (source=%s, sink=%s) ...",
                 source_id, sink_id)
     t2 = time.perf_counter()
-    graph_result = _safe_graph_metrics(nodes, edges, source_id, sink_id)
+    graph_result = _safe_graph_metrics(nodes, raw_edges, source_id, sink_id)
     t2_done = time.perf_counter() - t2
     if "error" in graph_result:
         errors.append(f"graph_metrics: {graph_result['error']}")
@@ -295,7 +320,7 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
         else:
             flat_flow[u] = targets
     try:
-        env_metrics = calculate_environmental_kpis(nodes, edges, flat_flow)
+        env_metrics = calculate_environmental_kpis(nodes, raw_edges, flat_flow)
     except Exception as exc:
         logger.error("co2_calculator.calculate_environmental_kpis failed: %s", exc)
         errors.append(f"environmental_metrics: {exc}")
@@ -335,7 +360,7 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
     # ── Step 5: SimPy Discrete-Event Time-Series Simulation ───────────────────
     logger.info("[Step 5] Running SimPy simulation for %d hours ...", sim_time_hours)
     t5 = time.perf_counter()
-    time_series = _safe_time_series(nodes, edges, sim_time_hours)
+    time_series = _safe_time_series(nodes, raw_edges, sim_time_hours)
     t5_done = time.perf_counter() - t5
     if time_series and "error" in time_series[0]:
         errors.append(f"time_series: {time_series[0]['error']}")
@@ -360,7 +385,7 @@ def run_full_analysis(payload: dict, sim_time_hours: int = 8) -> dict:
         "meta": {
             "sim_time_hours": sim_time_hours,
             "total_nodes": len(nodes),
-            "total_edges": len(edges),
+            "total_edges": len(raw_edges),
             "facility_count": len(all_metrics),
             "source_node_id": source_id,
             "sink_node_id": sink_id,

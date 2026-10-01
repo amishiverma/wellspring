@@ -1,0 +1,87 @@
+# =========================
+# Operating System Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_vista.db
+[Tt]humbs.db
+
+# =========================
+# IDEs and Editors
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+.cursor/
+
+# =========================
+# Environment Variables & Secrets
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# =========================
+# Frontend (Node / React / Vite)
+# =========================
+frontend/node_modules/
+node_modules/
+dist/
+build/
+.eslintcache
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Backend (Python / FastAPI)
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env_dev/
+ENV/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+
+# Python Tools/Logs
+pip-log.txt
+pip-delete-this-directory.txt
+*.log
+
+# =========================
+# Databases (SQLite via SQLModel)
+# =========================
+# Ignore local databases so you don't overwrite teammates' simulation runs
+*.db
+*.sqlite
+*.sqlite3
+backend/waste_sim.db
+
+# =========================
+# Docker
+# =========================
+.docker/
+docker-compose.override.yml

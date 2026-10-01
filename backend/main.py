@@ -15,14 +15,15 @@ NOTE    : Zero imports from backend/engine/ — engine integration is Phase 3.
 
 from __future__ import annotations
 
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-
-import sys
-from pathlib import Path
+from fastapi.responses import JSONResponse
 
 # Ensure backend directory is in sys.path regardless of execution CWD
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -86,6 +87,63 @@ app.add_middleware(
     allow_methods=["*"],          # GET, POST, PUT, DELETE, OPTIONS, etc.
     allow_headers=["*"],          # Content-Type, Authorization, etc.
 )
+
+
+# ---------------------------------------------------------------------------
+# Global Exception Handlers
+# NOTE: Registered AFTER CORSMiddleware so CORS headers are always present
+#       on error responses — Amishi's frontend will never see a CORS-blocked
+#       error, even on 422 / 500.
+# ---------------------------------------------------------------------------
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """
+    Catches Pydantic / FastAPI validation failures (HTTP 422).
+    Returns a clean JSON body instead of FastAPI's default nested error shape.
+
+    Triggered when:
+    - A required field is missing in the POST body
+    - A field value fails a Pydantic validator (e.g. current_load > capacity)
+    - Wrong data type is sent
+    """
+    # Flatten Pydantic's nested error list into a readable string
+    details = "; ".join(
+        f"{' -> '.join(str(loc) for loc in err['loc'])}: {err['msg']}"
+        for err in exc.errors()
+    )
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error":   True,
+            "message": f"Validation failed — {details}",
+            "hint":    "Check your request body matches the SimulationPayload schema.",
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    """
+    Catches any unhandled Python exception (HTTP 500).
+    Prevents raw tracebacks from leaking to the frontend.
+
+    Logs the error type and message; Tanishq / Yash should add
+    proper logging (e.g. structlog / loguru) in their engine modules.
+    """
+    print(f"[ERROR] Unhandled exception on {request.method} {request.url}: {exc!r}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error":   True,
+            "message": f"Internal server error — {type(exc).__name__}: {exc}",
+            "hint":    "Check server logs for the full traceback.",
+        },
+    )
 
 
 # ---------------------------------------------------------------------------

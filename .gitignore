@@ -85,3 +85,4 @@ backend/waste_sim.db
 # =========================
 .docker/
 docker-compose.override.yml
+backend/tests
